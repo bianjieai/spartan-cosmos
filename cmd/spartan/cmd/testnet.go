@@ -12,19 +12,11 @@ import (
 	"os"
 	"path/filepath"
 
-	evmhd "github.com/tharsis/ethermint/crypto/hd"
-
-	"github.com/tendermint/tendermint/crypto/algo"
-
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
-	evmfmttypes "github.com/tharsis/ethermint/x/feemarket/types"
-
-	ethermint "github.com/tharsis/ethermint/types"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	tmconfig "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/crypto/algo"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/libs/tempfile"
@@ -44,7 +36,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
+	evmhd "github.com/tharsis/ethermint/crypto/hd"
+	evmosConfig "github.com/tharsis/ethermint/server/config"
+	ethermint "github.com/tharsis/ethermint/types"
+	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	evmfmttypes "github.com/tharsis/ethermint/x/feemarket/types"
 
 	servicetypes "github.com/irisnet/irismod/modules/service/types"
 	tokentypes "github.com/irisnet/irismod/modules/token/types"
@@ -54,8 +50,7 @@ import (
 	"github.com/bianjieai/iritamod/modules/perm"
 	"github.com/bianjieai/iritamod/utils"
 
-	evmosConfig "github.com/tharsis/ethermint/server/config"
-
+	evmutils "github.com/bianjieai/irita/modules/evm/utils"
 	opbtypes "github.com/bianjieai/irita/modules/opb/types"
 )
 

@@ -2,18 +2,14 @@
 
 set -eo pipefail
 
-
 IRISMOD_VERSION=v1.4.0
 IRITAMOD_VERSION=v1.0.0
 SDK_VERSION=v0.42.3-irita-210413
-WASMD_VERSION=v0.15.1
-WASMD_PROTO_DIR=x/wasm/internal/types
 
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/proto
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/third_party/proto
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/irisnet/irismod@${IRISMOD_VERSION}/proto
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${IRITAMOD_VERSION}/proto
-chmod -R 755 ${GOPATH}/pkg/mod/github.com/!cosm!wasm/wasmd@${WASMD_VERSION}/${WASMD_PROTO_DIR}
 
 rm -rf ./tmp-swagger-gen ./tmp && mkdir -p ./tmp-swagger-gen ./tmp/proto ./tmp/third_party
 
@@ -22,7 +18,6 @@ cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/third_par
 cp -r ${GOPATH}/pkg/mod/github.com/irisnet/irismod@${IRISMOD_VERSION}/proto ./tmp
 cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${IRITAMOD_VERSION}/proto ./tmp
 mkdir -p ./tmp/proto/${WASMD_PROTO_DIR}
-cp -r ${GOPATH}/pkg/mod/github.com/!cosm!wasm/wasmd@${WASMD_VERSION}/${WASMD_PROTO_DIR}/*.proto ./tmp/proto/${WASMD_PROTO_DIR}
 cp -r ./proto ./tmp
 cp -r ./third_party/proto/cosmos ./tmp/third_party/proto/cosmos
 

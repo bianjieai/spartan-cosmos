@@ -5,11 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
-
-	ethermintclient "github.com/tharsis/ethermint/client"
-	ethermint "github.com/tharsis/ethermint/types"
-
 	"github.com/pkg/errors"
 
 	"github.com/spf13/cast"
@@ -39,16 +34,17 @@ import (
 	genutilcli "github.com/bianjieai/iritamod/modules/genutil/client/cli"
 	"github.com/bianjieai/iritamod/modules/node"
 
-	"github.com/bianjieai/irita/app"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-
+	ethermintclient "github.com/tharsis/ethermint/client"
 	"github.com/tharsis/ethermint/crypto/hd"
 	"github.com/tharsis/ethermint/encoding"
 	servercfg "github.com/tharsis/ethermint/server/config"
+	ethermint "github.com/tharsis/ethermint/types"
 
 	evmclient "github.com/bianjieai/irita/modules/evm/client"
 	evmserver "github.com/bianjieai/irita/modules/evm/server"
+	evmutils "github.com/bianjieai/irita/modules/evm/utils"
+
+	"github.com/bianjieai/spartan-cosmos/app"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
@@ -66,8 +62,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(app.DefaultNodeHome).
-		WithKeyringOptions(hd.EthSecp256k1Option()).
-		WithViper("")
+		WithKeyringOptions(hd.EthSecp256k1Option())
 
 	rootCmd := &cobra.Command{
 		Use:   "spartan",
@@ -146,7 +141,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
-	wasm.AddModuleInitFlags(startCmd)
 }
 
 func queryCommand() *cobra.Command {

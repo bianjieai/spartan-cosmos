@@ -8,9 +8,9 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/irisnet/irismod/modules/service"
-
 	"github.com/bianjieai/iritamod/modules/node"
+
+	"github.com/irisnet/irismod/modules/service"
 )
 
 // ExportAppStateAndValidators export the state of irita for a genesis file

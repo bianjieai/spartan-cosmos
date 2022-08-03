@@ -56,9 +56,9 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=irita \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
 		  -X github.com/tendermint/tendermint/crypto/algo.Algo=sm2 \
-		  -X github.com/bianjieai/irita/address.Bech32ChainPrefix=i \
-		  -X github.com/bianjieai/irita/address.PrefixAcc=a \
-		  -X github.com/bianjieai/irita/address.PrefixAddress=a \
+		  -X github.com/bianjieai/spartan-cosmos/address.Bech32ChainPrefix=i \
+		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAcc=a \
+		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAddress=a \
 		  -X github.com/tharsis/ethermint/types.EvmChainID=1223
 
 buildflags = -X github.com/tendermint/tendermint/crypto/algo.Algo=sm2
@@ -80,23 +80,16 @@ include contrib/devtools/Makefile
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
-	go build $(BUILD_FLAGS) -o build/irita.exe ./cmd/irita
+	go build $(BUILD_FLAGS) -o build/spartan.exe ./cmd/spartan
 else
-	go build $(BUILD_FLAGS) -o build/irita ./cmd/irita
+	go build $(BUILD_FLAGS) -o build/spartan ./cmd/spartan
 endif
 
 build-linux: go.sum update-swagger-docs
 	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
 
-build-contract-tests-hooks:
-ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/contract_tests.exe ./cmd/contract_tests
-else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/contract_tests ./cmd/contract_tests
-endif
-
 install: go.sum
-	go install $(BUILD_FLAGS) ./cmd/irita
+	go install $(BUILD_FLAGS) ./cmd/spartan
 
 update-swagger-docs: statik proto-swagger-gen
 	$(BINDIR)/statik -src=lite/swagger-ui -dest=lite -f -m
@@ -162,7 +155,7 @@ lint:
 format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./lite/*/statik.go" -not -path "*.pb.go" | xargs gofmt -w -s
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./lite/*/statik.go" -not -path "*.pb.go" | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./lite/*/statik.go" -not -path "*.pb.go" | xargs goimports -w -local github.com/bianjieai/irita
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./lite/*/statik.go" -not -path "*.pb.go" | xargs goimports -w -local github.com/bianjieai/spartan-cosmos
 
 benchmark:
 	@go test -mod=readonly -bench=. ./...
@@ -174,7 +167,7 @@ build-docker-iritanode:
 	docker build -t bianjieai/irita .
 
 localnet-init:
-	@if ! [ -f build/nodecluster/node0/irita/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/home bianjieai/irita irita testnet --v 4 --output-dir /home/nodecluster --chain-id irita-test --keyring-backend test --starting-ip-address 192.168.10.2 ; fi
+	@if ! [ -f build/nodecluster/node0/spartan/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/home bianjieai/spartan spartan testnet --v 4 --output-dir /home/nodecluster --chain-id irita-test --keyring-backend test --starting-ip-address 192.168.10.2 ; fi
 	@echo "To install jq command, please refer to this page: https://stedolan.github.io/jq/download/"
 	@cat build/nodecluster/node0/irita/config/genesis.json | jq '.app_state.auth.accounts+= [{"@type": "/cosmos.auth.v1beta1.BaseAccount","address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e"}]' | jq '.app_state.bank.balances+= [{"address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e","coins":[{"denom":"point","amount":"1000000000000"}]}]' > build/genesis_temp.json
 	@sudo cp build/genesis_temp.json build/nodecluster/node0/irita/config/genesis.json

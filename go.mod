@@ -3,14 +3,12 @@ module github.com/bianjieai/spartan-cosmos
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.0.0-00010101000000-000000000000
 	github.com/bianjieai/irita v0.1.1-rc1.0.20220803033839-051e71212e3c
 	github.com/bianjieai/iritamod v1.2.1-0.20220706112746-f988d76b5406
 	github.com/cosmos/cosmos-sdk v0.45.2
 	github.com/irisnet/irismod v1.5.3-0.20220705030521-0c78477e6a75
 	github.com/olebedev/config v0.0.0-20190528211619-364964f3a8e4
 	github.com/pkg/errors v0.9.1
-	github.com/snikch/goodman v0.0.0-20171125024755-10e37e294daa
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
@@ -24,15 +22,16 @@ require (
 	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
 	github.com/99designs/keyring v1.1.6 // indirect
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
+	github.com/CosmWasm/wasmd v0.0.0-00010101000000-000000000000 // indirect
 	github.com/CosmWasm/wasmvm v0.16.0 // indirect
 	github.com/DataDog/zstd v1.4.8 // indirect
+	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/Workiva/go-datastructures v1.0.53 // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
-	github.com/bianjieai/tibc-go v0.3.1-0.20220412124234-9b75094ff868 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
