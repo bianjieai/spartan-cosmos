@@ -601,6 +601,7 @@ func NewSpartanApp(
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 	// set peer filter by node ID
+	// TODO
 	app.SetIDPeerFilter(app.nodeKeeper.FilterNodeByID)
 
 	if loadLatest {
@@ -755,6 +756,7 @@ func (app *SpartanApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.AP
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
+	//TODO
 	if apiConfig.Swagger {
 		//lite.RegisterSwaggerAPI(clientCtx, apiSvr.Router)
 	}

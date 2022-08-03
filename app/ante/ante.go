@@ -149,6 +149,7 @@ func Recover(logger tmlog.Logger, err *error) {
 	}
 }
 
+//TODO
 func RegisterAccessControl(permKeeper perm.Keeper) perm.Keeper {
 	// permission auth
 	permKeeper.RegisterMsgAuth(&perm.MsgAssignRoles{}, perm.RoleRootAdmin, perm.RolePermAdmin, perm.RolePowerUserAdmin)
