@@ -121,7 +121,7 @@ import (
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
 )
 
-const appName = "IritaApp"
+const appName = "SpartanApp"
 
 // DefaultNodeHome default home directories for the application daemon
 var DefaultNodeHome string
@@ -172,7 +172,7 @@ var (
 )
 
 // Verify app interface at compile time
-var _ simapp.App = (*IritaApp)(nil)
+var _ simapp.App = (*SpartanApp)(nil)
 
 func init() {
 	userHomeDir, err := os.UserHomeDir()
@@ -195,10 +195,10 @@ func init() {
 	)
 }
 
-// IritaApp extends an ABCI application, but with most of its parameters exported.
+// SpartanApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
-type IritaApp struct {
+type SpartanApp struct {
 	*baseapp.BaseApp
 	cdc               *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -251,11 +251,11 @@ type IritaApp struct {
 	configurator module.Configurator
 }
 
-// NewIritaApp returns a reference to an initialized IritaApp.
-func NewIritaApp(
+// NewSpartanApp returns a reference to an initialized IritaApp.
+func NewSpartanApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig, appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
-) *IritaApp {
+) *SpartanApp {
 	// TODO: Remove cdc in favor of appCodec once all modules are migrated.
 
 	evmutils.SetEthermintSupportedAlgorithms()
@@ -296,7 +296,7 @@ func NewIritaApp(
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
-	app := &IritaApp{
+	app := &SpartanApp{
 		BaseApp:           bApp,
 		cdc:               cdc,
 		appCodec:          appCodec,
@@ -622,10 +622,10 @@ func NewIritaApp(
 }
 
 // Name returns the name of the App
-func (app *IritaApp) Name() string { return app.BaseApp.Name() }
+func (app *SpartanApp) Name() string { return app.BaseApp.Name() }
 
 // BeginBlocker application updates every begin block
-func (app *IritaApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *SpartanApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	chainID, _ := ethermint.ParseChainID(req.GetHeader().ChainID)
 	if app.EvmKeeper.Signer == nil {
 		app.EvmKeeper.Signer = crypto.NewSm2Signer(chainID)
@@ -637,12 +637,12 @@ func (app *IritaApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) a
 }
 
 // EndBlocker application updates every end block
-func (app *IritaApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *SpartanApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // InitChainer application update at chain initialization
-func (app *IritaApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *SpartanApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
@@ -662,17 +662,17 @@ func (app *IritaApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 }
 
 // LoadHeight loads a particular height
-func (app *IritaApp) LoadHeight(height int64) error {
+func (app *SpartanApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
-func (app *IritaApp) RegisterTendermintService(clientCtx client.Context) {
+func (app *SpartanApp) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *IritaApp) ModuleAccountAddrs() map[string]bool {
+func (app *SpartanApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
@@ -685,7 +685,7 @@ func (app *IritaApp) ModuleAccountAddrs() map[string]bool {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *IritaApp) LegacyAmino() *codec.LegacyAmino {
+func (app *SpartanApp) LegacyAmino() *codec.LegacyAmino {
 	return app.cdc
 }
 
@@ -693,52 +693,52 @@ func (app *IritaApp) LegacyAmino() *codec.LegacyAmino {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *IritaApp) AppCodec() codec.Codec {
+func (app *SpartanApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
 // InterfaceRegistry returns IritaApp's InterfaceRegistry
-func (app *IritaApp) InterfaceRegistry() types.InterfaceRegistry {
+func (app *SpartanApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *IritaApp) GetKey(storeKey string) *sdk.KVStoreKey {
+func (app *SpartanApp) GetKey(storeKey string) *sdk.KVStoreKey {
 	return app.keys[storeKey]
 }
 
 // GetTKey returns the TransientStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *IritaApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+func (app *SpartanApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
 	return app.tkeys[storeKey]
 }
 
 // GetMemKey returns the MemStoreKey for the provided mem key.
 //
 // NOTE: This is solely used for testing purposes.
-func (app *IritaApp) GetMemKey(storeKey string) *sdk.MemoryStoreKey {
+func (app *SpartanApp) GetMemKey(storeKey string) *sdk.MemoryStoreKey {
 	return app.memKeys[storeKey]
 }
 
 // GetSubspace returns a param subspace for a given module name.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *IritaApp) GetSubspace(moduleName string) paramstypes.Subspace {
+func (app *SpartanApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	subspace, _ := app.paramsKeeper.GetSubspace(moduleName)
 	return subspace
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *IritaApp) SimulationManager() *module.SimulationManager {
+func (app *SpartanApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *IritaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *SpartanApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
 	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
 	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
@@ -761,12 +761,12 @@ func (app *IritaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIC
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
-func (app *IritaApp) RegisterTxService(clientCtx client.Context) {
+func (app *SpartanApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
 }
 
 // RegisterUpgradePlan implements the upgrade execution logic of the upgrade module
-func (app *IritaApp) RegisterUpgradePlan(planName string,
+func (app *SpartanApp) RegisterUpgradePlan(planName string,
 	upgrades store.StoreUpgrades, upgradeHandler sdkupgrade.UpgradeHandler) {
 	upgradeInfo, err := app.upgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {

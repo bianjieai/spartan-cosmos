@@ -14,7 +14,7 @@ import (
 )
 
 // ExportAppStateAndValidators export the state of irita for a genesis file
-func (app *IritaApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs []string) (servertypes.ExportedApp, error) {
+func (app *SpartanApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs []string) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -42,7 +42,7 @@ func (app *IritaApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
 //      in favour of export at a block height
-func (app *IritaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
+func (app *SpartanApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 
 	/* Just to be safe, assert the invariants on current state. */
 	app.crisisKeeper.AssertInvariants(ctx)

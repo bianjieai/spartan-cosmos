@@ -50,8 +50,8 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=irita \
-		  -X github.com/cosmos/cosmos-sdk/version.AppName=irita \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=spartan \
+		  -X github.com/cosmos/cosmos-sdk/version.AppName=spartan \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
@@ -164,7 +164,7 @@ benchmark:
 ########################################
 ### Local validator nodes using docker and docker-compose
 build-docker-iritanode:
-	docker build -t bianjieai/irita .
+	docker build -t bianjieai/spartan .
 
 localnet-init:
 	@if ! [ -f build/nodecluster/node0/spartan/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/home bianjieai/spartan spartan testnet --v 4 --output-dir /home/nodecluster --chain-id irita-test --keyring-backend test --starting-ip-address 192.168.10.2 ; fi

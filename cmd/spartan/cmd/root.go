@@ -62,7 +62,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(app.DefaultNodeHome).
-		WithKeyringOptions(hd.EthSecp256k1Option())
+		WithKeyringOptions(hd.EthSecp256k1Option()).
+		WithViper("")
 
 	rootCmd := &cobra.Command{
 		Use:   "spartan",
@@ -225,7 +226,7 @@ func (ac appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, 
 		panic(err)
 	}
 
-	return app.NewIritaApp(
+	return app.NewSpartanApp(
 		logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
@@ -266,7 +267,7 @@ func (ac appCreator) appExport(
 		loadLatest = true
 	}
 
-	iritaApp := app.NewIritaApp(
+	iritaApp := app.NewSpartanApp(
 		logger,
 		db,
 		traceStore,
