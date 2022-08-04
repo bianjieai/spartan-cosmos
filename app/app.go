@@ -121,6 +121,7 @@ import (
 
 	"github.com/bianjieai/spartan-cosmos/address"
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
+	nodeclient "github.com/bianjieai/spartan-cosmos/module/node/client"
 	nodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
 	nodemodule "github.com/bianjieai/spartan-cosmos/module/node/module"
 )
@@ -160,9 +161,9 @@ var (
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		gov.NewAppModuleBasic(
-		//TODO
-		//CreateValidatorProposalHandler
-		//DeleteValidatorProposalHandler
+			nodeclient.CreateValidatorProposalHandler,
+			nodeclient.UpdateValidatorProposalHandler,
+			nodeclient.RemoveValidatorProposalHandler,
 		),
 	)
 	// module account permissions
@@ -405,7 +406,8 @@ func NewSpartanApp(
 	app.wservicekeeper = wservicekeeper.NewKeeper(appCodec, keys[wservicetypes.StoreKey], app.serviceKeeper)
 
 	govRouter := govtypes.NewRouter()
-	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler)
+	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+		AddRoute(nodetypes.RouterKey, app.nodeKeeper.ProposalHandler())
 	app.govKeeper = govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.accountKeeper, app.bankKeeper,
 		&app.nodeKeeper, govRouter,
