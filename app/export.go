@@ -30,7 +30,7 @@ func (app *SpartanApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllow
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators := node.WriteValidators(ctx, app.nodeKeeper)
+	validators := node.WriteValidators(ctx, app.nodeKeeper.Keeper)
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,

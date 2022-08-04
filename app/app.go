@@ -85,7 +85,6 @@ import (
 	identitykeeper "github.com/bianjieai/iritamod/modules/identity/keeper"
 	identitytypes "github.com/bianjieai/iritamod/modules/identity/types"
 	"github.com/bianjieai/iritamod/modules/node"
-	nodekeeper "github.com/bianjieai/iritamod/modules/node/keeper"
 	nodetypes "github.com/bianjieai/iritamod/modules/node/types"
 	cparams "github.com/bianjieai/iritamod/modules/params"
 	"github.com/bianjieai/iritamod/modules/perm"
@@ -119,6 +118,8 @@ import (
 
 	"github.com/bianjieai/spartan-cosmos/address"
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
+	nodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
+	nodemodule "github.com/bianjieai/spartan-cosmos/module/node/module"
 )
 
 const appName = "SpartanApp"
@@ -319,10 +320,15 @@ func NewSpartanApp(
 	app.bankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.accountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
 	)
-	app.nodeKeeper = node.NewKeeper(appCodec, keys[nodetypes.StoreKey], app.GetSubspace(node.ModuleName))
+
+	app.nodeKeeper = nodekeeper.NewKeeper(appCodec, keys[nodetypes.StoreKey], app.GetSubspace(node.ModuleName))
 	app.slashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &app.nodeKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
+	app.nodeKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(app.slashingKeeper.Hooks()),
+	)
+
 	app.crisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.bankKeeper, authtypes.FeeCollectorName,
 	)
@@ -359,10 +365,6 @@ func NewSpartanApp(
 
 	app.randomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.bankKeeper, app.serviceKeeper)
 
-	app.nodeKeeper = *app.nodeKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.slashingKeeper.Hooks()),
-	)
-
 	permKeeper := permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey])
 	app.permKeeper = appante.RegisterAccessControl(permKeeper)
 
@@ -383,7 +385,7 @@ func NewSpartanApp(
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.accountKeeper, app.bankKeeper, appkeeper.WNodeKeeper{Keeper: app.nodeKeeper}, app.FeeMarketKeeper,
+		app.accountKeeper, app.bankKeeper, appkeeper.WNodeKeeper{Keeper: app.nodeKeeper.Keeper}, app.FeeMarketKeeper,
 		tracer, // debug EVM based on Baseapp options
 	)
 
@@ -421,7 +423,7 @@ func NewSpartanApp(
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
-		node.NewAppModule(appCodec, app.nodeKeeper),
+		nodemodule.NewAppModule(appCodec, app.nodeKeeper),
 		opb.NewAppModule(appCodec, app.opbKeeper),
 		// evm
 		evm.NewAppModule(app.EvmKeeper, app.accountKeeper),
@@ -564,7 +566,7 @@ func NewSpartanApp(
 		random.NewAppModule(appCodec, app.randomKeeper, app.accountKeeper, app.bankKeeper),
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
-		node.NewAppModule(appCodec, app.nodeKeeper),
+		nodemodule.NewAppModule(appCodec, app.nodeKeeper),
 		opb.NewAppModule(appCodec, app.opbKeeper),
 		// evm
 		evm.NewAppModule(app.EvmKeeper, app.accountKeeper),
