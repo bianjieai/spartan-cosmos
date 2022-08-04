@@ -600,9 +600,6 @@ func NewSpartanApp(
 	)
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
-	// set peer filter by node ID
-	// TODO
-	app.SetIDPeerFilter(app.nodeKeeper.FilterNodeByID)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
