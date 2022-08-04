@@ -13,24 +13,14 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	mttypes "github.com/irisnet/irismod/modules/mt/types"
-	nfttypes "github.com/irisnet/irismod/modules/nft/types"
-	oracletypes "github.com/irisnet/irismod/modules/oracle/types"
-	servicetypes "github.com/irisnet/irismod/modules/service/types"
 	tokenkeeper "github.com/irisnet/irismod/modules/token/keeper"
-	tokentypes "github.com/irisnet/irismod/modules/token/types"
 
 	evmmoduleante "github.com/bianjieai/irita/modules/evm"
 	"github.com/bianjieai/irita/modules/gas"
 	opbkeeper "github.com/bianjieai/irita/modules/opb/keeper"
 	wservicekeeper "github.com/bianjieai/irita/modules/wservice/keeper"
-	"github.com/bianjieai/iritamod/modules/identity"
-	"github.com/bianjieai/iritamod/modules/node"
-	"github.com/bianjieai/iritamod/modules/params"
 	"github.com/bianjieai/iritamod/modules/perm"
-	upgradetypes "github.com/bianjieai/iritamod/modules/upgrade/types"
 
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
@@ -85,8 +75,6 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 						ethermintante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
 						ethermintante.NewEthMempoolFeeDecorator(options.EvmKeeper),                  // Check eth effective gas price against minimal-gas-prices
 						ethermintante.NewEthValidateBasicDecorator(options.EvmKeeper),
-
-						perm.NewAuthDecorator(options.PermKeeper),
 					)
 
 				default:
@@ -147,44 +135,4 @@ func Recover(logger tmlog.Logger, err *error) {
 			)
 		}
 	}
-}
-
-//TODO
-func RegisterAccessControl(permKeeper perm.Keeper) perm.Keeper {
-	// permission auth
-	permKeeper.RegisterMsgAuth(&perm.MsgAssignRoles{}, perm.RoleRootAdmin, perm.RolePermAdmin, perm.RolePowerUserAdmin)
-	permKeeper.RegisterMsgAuth(&perm.MsgUnassignRoles{}, perm.RoleRootAdmin, perm.RolePermAdmin, perm.RolePowerUserAdmin)
-
-	// blacklist auth
-	permKeeper.RegisterMsgAuth(&perm.MsgBlockAccount{}, perm.RoleRootAdmin, perm.RoleBlacklistAdmin)
-	permKeeper.RegisterMsgAuth(&perm.MsgUnblockAccount{}, perm.RoleRootAdmin, perm.RoleBlacklistAdmin)
-	permKeeper.RegisterMsgAuth(&perm.MsgBlockContract{}, perm.RoleRootAdmin, perm.RoleBlacklistAdmin)
-	permKeeper.RegisterMsgAuth(&perm.MsgUnblockContract{}, perm.RoleRootAdmin, perm.RoleBlacklistAdmin)
-
-	// node auth
-	permKeeper.RegisterModuleAuth(node.ModuleName, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-	permKeeper.RegisterMsgAuth(&node.MsgRemoveValidator{}, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-	permKeeper.RegisterMsgAuth(&node.MsgCreateValidator{}, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-	permKeeper.RegisterMsgAuth(&node.MsgUpdateValidator{}, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-	permKeeper.RegisterModuleAuth(slashingtypes.ModuleName, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-
-	// param auth
-	permKeeper.RegisterModuleAuth(params.ModuleName, perm.RoleRootAdmin, perm.RoleParamAdmin)
-
-	// identity auth
-	permKeeper.RegisterMsgAuth(&identity.MsgCreateIdentity{}, perm.RoleRootAdmin, perm.RoleIDAdmin)
-
-	// oracle auth
-	permKeeper.RegisterModuleAuth(oracletypes.ModuleName, perm.RoleRootAdmin, perm.RolePowerUser)
-
-	// power user auth
-	permKeeper.RegisterMsgAuth(&tokentypes.MsgIssueToken{}, perm.RoleRootAdmin, perm.RolePowerUser)
-	permKeeper.RegisterMsgAuth(&nfttypes.MsgIssueDenom{}, perm.RoleRootAdmin, perm.RolePowerUser)
-	permKeeper.RegisterMsgAuth(&mttypes.MsgIssueDenom{}, perm.RoleRootAdmin, perm.RolePowerUser)
-	permKeeper.RegisterMsgAuth(&servicetypes.MsgDefineService{}, perm.RoleRootAdmin, perm.RolePowerUser)
-	permKeeper.RegisterMsgAuth(&servicetypes.MsgBindService{}, perm.RoleRootAdmin, perm.RolePowerUser)
-
-	// upgrade auth
-	permKeeper.RegisterModuleAuth(upgradetypes.ModuleName, perm.RoleRootAdmin, perm.RoleNodeAdmin)
-	return permKeeper
 }

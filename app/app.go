@@ -376,10 +376,7 @@ func NewSpartanApp(
 	)
 
 	app.randomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.bankKeeper, app.serviceKeeper)
-
-	permKeeper := permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey])
-	app.permKeeper = appante.RegisterAccessControl(permKeeper)
-
+	app.permKeeper = permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey])
 	app.identityKeeper = identitykeeper.NewKeeper(appCodec, keys[identitytypes.StoreKey])
 
 	app.opbKeeper = opbkeeper.NewKeeper(

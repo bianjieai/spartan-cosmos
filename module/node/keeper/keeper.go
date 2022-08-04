@@ -19,16 +19,15 @@ type Keeper struct {
 }
 
 func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, ps paramtypes.Subspace) Keeper {
-	return Keeper{Keeper: nodekeeper.NewKeeper(cdc, storeKey, ps)}
-}
-
-//VerifyCert override nodekeeper.Keeper.VerifyCert, don't Verify cert used by root cert
-func (k *Keeper) VerifyCert(ctx sdk.Context, certStr string) (cert cautil.Cert, err error) {
-	cert, err = cautil.ReadCertificateFromMem([]byte(certStr))
-	if err != nil {
-		return cert, sdkerrors.Wrap(types.ErrInvalidCert, err.Error())
-	}
-	return cert, nil
+	k := nodekeeper.NewKeeper(cdc, storeKey, ps)
+	k = k.SetVerifyCertFn(func(ctx sdk.Context, certStr string) (cert cautil.Cert, err error) {
+		cert, err = cautil.ReadCertificateFromMem([]byte(certStr))
+		if err != nil {
+			return cert, sdkerrors.Wrap(types.ErrInvalidCert, err.Error())
+		}
+		return cert, nil
+	})
+	return Keeper{Keeper: k}
 }
 
 func (k *Keeper) ProposalHandler() govtypes.Handler {
