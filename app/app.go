@@ -48,6 +48,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -156,6 +159,11 @@ var (
 		// evm
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
+		gov.NewAppModuleBasic(
+		//TODO
+		//CreateValidatorProposalHandler
+		//DeleteValidatorProposalHandler
+		),
 	)
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -164,6 +172,7 @@ var (
 		servicetypes.DepositAccName:         nil,
 		servicetypes.RequestAccName:         nil,
 		opbtypes.PointTokenFeeCollectorName: nil,
+		govtypes.ModuleName:                 {authtypes.Burner},
 
 		// evm
 		evmtypes.ModuleName: {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
@@ -234,6 +243,7 @@ type SpartanApp struct {
 	wservicekeeper   wservicekeeper.IKeeper
 	feeGrantKeeper   feegrantkeeper.Keeper
 	capabilityKeeper *capabilitykeeper.Keeper
+	govKeeper        govkeeper.Keeper
 	// tibc
 	scopedTIBCKeeper     capabilitykeeper.ScopedKeeper
 	scopedTIBCMockKeeper capabilitykeeper.ScopedKeeper
@@ -274,6 +284,7 @@ func NewSpartanApp(
 		authtypes.StoreKey,
 		banktypes.StoreKey,
 		slashingtypes.StoreKey,
+		govtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
 		feegrant.StoreKey,
@@ -393,6 +404,13 @@ func NewSpartanApp(
 
 	app.wservicekeeper = wservicekeeper.NewKeeper(appCodec, keys[wservicetypes.StoreKey], app.serviceKeeper)
 
+	govRouter := govtypes.NewRouter()
+	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler)
+	app.govKeeper = govkeeper.NewKeeper(
+		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.accountKeeper, app.bankKeeper,
+		&app.nodeKeeper, govRouter,
+	)
+
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
 	opt := appOpts.Get(crisis.FlagSkipGenesisInvariants)
@@ -408,6 +426,7 @@ func NewSpartanApp(
 		auth.NewAppModule(appCodec, app.accountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper, skipGenesisInvariants),
+		gov.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
 		upgrade.NewAppModule(app.upgradeKeeper),
@@ -442,6 +461,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -466,6 +486,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -498,6 +519,7 @@ func NewSpartanApp(
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
 		crisistypes.ModuleName,
+		govtypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
 		tokentypes.ModuleName,
@@ -523,6 +545,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -555,6 +578,7 @@ func NewSpartanApp(
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
+		gov.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		params.NewAppModule(app.paramsKeeper),
 		cparams.NewAppModule(appCodec, app.paramsKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
@@ -805,6 +829,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(recordtypes.ModuleName)
 	paramsKeeper.Subspace(servicetypes.ModuleName)
 	paramsKeeper.Subspace(opbtypes.ModuleName)
+	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 
 	// evm
 	paramsKeeper.Subspace(evmtypes.ModuleName)
