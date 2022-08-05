@@ -119,11 +119,11 @@ import (
 	wservicekeeper "github.com/bianjieai/irita/modules/wservice/keeper"
 	wservicetypes "github.com/bianjieai/irita/modules/wservice/types"
 
-	"github.com/bianjieai/spartan-cosmos/address"
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
 	nodeclient "github.com/bianjieai/spartan-cosmos/module/node/client"
 	nodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
 	nodemodule "github.com/bianjieai/spartan-cosmos/module/node/module"
+	spartantypes "github.com/bianjieai/spartan-cosmos/types"
 )
 
 const appName = "SpartanApp"
@@ -154,7 +154,7 @@ var (
 		random.AppModuleBasic{},
 		perm.AppModuleBasic{},
 		identity.AppModuleBasic{},
-		node.AppModuleBasic{},
+		nodemodule.AppModuleBasic{},
 		opb.AppModuleBasic{},
 
 		// evm
@@ -193,11 +193,11 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, ".spartan")
 
-	address.ConfigureBech32Prefix()
+	spartantypes.ConfigureBech32Prefix()
 	tokentypes.SetNativeToken(
-		"spartan",
-		"Spartan base native token",
-		"uirita",
+		spartantypes.TokenSymbol,
+		spartantypes.TokenName,
+		spartantypes.TokenMinUnit,
 		6,
 		1000000000,
 		math.MaxUint64,

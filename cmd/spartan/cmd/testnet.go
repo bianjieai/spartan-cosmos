@@ -35,6 +35,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	evmhd "github.com/tharsis/ethermint/crypto/hd"
 	evmosConfig "github.com/tharsis/ethermint/server/config"
@@ -254,12 +255,10 @@ func InitTestnet(
 			return err
 		}
 
-		accTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accPointTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accNativeTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accEvmTokens := sdk.TokensFromConsensusPower(5000, PowerReduction)
 		coins := sdk.Coins{
-			sdk.NewCoin(fmt.Sprintf("%stoken", nodeDirName), accTokens),
 			sdk.NewCoin(DefaultPointMinUnit, accPointTokens),
 			sdk.NewCoin(tokentypes.GetNativeToken().MinUnit, accNativeTokens),
 			sdk.NewCoin(DefaultEvmMinUnit, accEvmTokens),
@@ -382,7 +381,7 @@ func initGenFiles(
 
 	pointToken := tokentypes.Token{
 		Symbol:        DefaultPointDenom,
-		Name:          "Irita point token",
+		Name:          "Spartan Network Point Token",
 		Scale:         6,
 		MinUnit:       DefaultPointMinUnit,
 		InitialSupply: 1000000000,
@@ -393,7 +392,7 @@ func initGenFiles(
 
 	gasToken := tokentypes.Token{
 		Symbol:        NewEvmDenom,
-		Name:          "IRITA Fee Token",
+		Name:          "Spartan Network Fee Token",
 		Scale:         18,
 		MinUnit:       DefaultEvmMinUnit,
 		InitialSupply: 1000000000,
@@ -401,17 +400,18 @@ func initGenFiles(
 		Mintable:      true,
 		Owner:         genAccounts[0].GetAddress().String(),
 	}
+	nativeToken := tokentypes.GetNativeToken()
 
 	tokenGenState.Tokens = append(tokenGenState.Tokens, pointToken)
 	tokenGenState.Tokens = append(tokenGenState.Tokens, gasToken)
-	tokenGenState.Params.IssueTokenBaseFee = sdk.NewCoin(DefaultPointDenom, sdk.NewInt(60000))
+	tokenGenState.Params.IssueTokenBaseFee = sdk.NewCoin(nativeToken.Symbol, sdk.NewInt(60000))
 	appGenState[tokentypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&tokenGenState)
 
 	// modify the native token denoms in the opb genesis
 	var opbGenState opbtypes.GenesisState
 	jsonMarshaler.MustUnmarshalJSON(appGenState[opbtypes.ModuleName], &opbGenState)
 
-	opbGenState.Params.BaseTokenDenom = tokentypes.GetNativeToken().MinUnit
+	opbGenState.Params.BaseTokenDenom = nativeToken.MinUnit
 	opbGenState.Params.PointTokenDenom = DefaultPointMinUnit
 	appGenState[opbtypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&opbGenState)
 
@@ -419,7 +419,7 @@ func initGenFiles(
 	var crisisGenState crisistypes.GenesisState
 	jsonMarshaler.MustUnmarshalJSON(appGenState[crisistypes.ModuleName], &crisisGenState)
 
-	crisisGenState.ConstantFee.Denom = tokentypes.GetNativeToken().MinUnit
+	crisisGenState.ConstantFee.Denom = nativeToken.MinUnit
 	appGenState[crisistypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&crisisGenState)
 
 	// modify the constant fee denoms in the crisis genesis
@@ -454,6 +454,13 @@ func initGenFiles(
 		)
 	}
 	appGenState[perm.ModuleName] = jsonMarshaler.MustMarshalJSON(&permGenState)
+
+	var govGenState govtypes.GenesisState
+	clientCtx.Codec.MustUnmarshalJSON(appGenState[govtypes.ModuleName], &govGenState)
+	govGenState.DepositParams.MinDeposit = sdk.NewCoins(
+		sdk.NewCoin(nativeToken.MinUnit, sdk.NewInt(100)),
+	)
+	appGenState[govtypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&govGenState)
 
 	appGenStateJSON, err := json.MarshalIndent(appGenState, "", "  ")
 	if err != nil {
