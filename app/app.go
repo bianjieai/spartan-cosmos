@@ -49,7 +49,7 @@ import (
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/gov"
-	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -120,6 +120,8 @@ import (
 	wservicetypes "github.com/bianjieai/irita/modules/wservice/types"
 
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
+	govkeeper "github.com/bianjieai/spartan-cosmos/module/gov/keeper"
+	govmodule "github.com/bianjieai/spartan-cosmos/module/gov/module"
 	nodeclient "github.com/bianjieai/spartan-cosmos/module/node/client"
 	nodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
 	nodemodule "github.com/bianjieai/spartan-cosmos/module/node/module"
@@ -425,7 +427,7 @@ func NewSpartanApp(
 		auth.NewAppModule(appCodec, app.accountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper, skipGenesisInvariants),
-		gov.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
+		govmodule.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
 		upgrade.NewAppModule(app.upgradeKeeper),
@@ -577,7 +579,7 @@ func NewSpartanApp(
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
-		gov.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
+		govmodule.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		params.NewAppModule(app.paramsKeeper),
 		cparams.NewAppModule(appCodec, app.paramsKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
