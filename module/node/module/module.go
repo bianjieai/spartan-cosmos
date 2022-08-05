@@ -28,6 +28,7 @@ import (
 	"github.com/bianjieai/iritamod/modules/node/keeper"
 	"github.com/bianjieai/iritamod/modules/node/types"
 
+	spartannode "github.com/bianjieai/spartan-cosmos/module/node"
 	spartannodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
 )
 
@@ -90,6 +91,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // RegisterInterfaces registers interfaces and implementations of the node module.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
+	spartannode.RegisterInterfaces(registry)
 }
 
 // _____________________________________

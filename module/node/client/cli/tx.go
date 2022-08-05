@@ -15,7 +15,7 @@ import (
 // a validator create proposal governance transaction.
 func NewCreateValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create-validator",
+		Use:   "create-validator [file]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Submit a validator create proposal",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,7 +49,7 @@ func NewCreateValidatorProposalTxCmd() *cobra.Command {
 // a validator create proposal governance transaction.
 func NewUpdateValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "update-validator",
+		Use:   "update-validator [file]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Submit a validator update proposal",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -83,7 +83,7 @@ func NewUpdateValidatorProposalTxCmd() *cobra.Command {
 // a validator create proposal governance transaction.
 func NewRemoveValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "remove-validator",
+		Use:   "remove-validator [file]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Submit a validator remove proposal",
 		RunE: func(cmd *cobra.Command, args []string) error {
