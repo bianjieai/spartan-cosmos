@@ -40,7 +40,6 @@ import (
 	servercfg "github.com/tharsis/ethermint/server/config"
 	ethermint "github.com/tharsis/ethermint/types"
 
-	evmclient "github.com/bianjieai/irita/modules/evm/client"
 	evmserver "github.com/bianjieai/irita/modules/evm/server"
 	evmutils "github.com/bianjieai/irita/modules/evm/utils"
 
@@ -134,8 +133,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		rpc.StatusCommand(),
 		queryCommand(),
 		txCommand(),
-		//keys.Commands(app.DefaultNodeHome),
-		evmclient.KeyCommands(app.DefaultNodeHome),
+		KeyCommand(app.DefaultNodeHome),
 	)
 
 }
