@@ -16,7 +16,6 @@ import (
 	"github.com/spf13/viper"
 
 	tmconfig "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/crypto/algo"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/libs/tempfile"
@@ -115,7 +114,7 @@ func testnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalance
 	cmd.Flags().String(flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
 	cmd.Flags().String(server.FlagMinGasPrices, fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom), "Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
-	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Sm2Type), "Key signing algorithm to generate keys for")
+	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Secp256k1Type), "Key signing algorithm to generate keys for")
 	return cmd
 }
 
@@ -128,7 +127,6 @@ func InitTestnet(
 	nodeDaemonHome, nodeCLIHome, startingIPAddress string,
 	numValidators int, algoStr string,
 ) error {
-	algo.Algo = algo.SM2
 	if chainID == "" {
 		chainID = fmt.Sprintf("chain_%d-1", tmrand.Int63n(9999999999999)+1)
 	}
