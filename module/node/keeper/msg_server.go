@@ -10,11 +10,27 @@ import (
 
 var _ types.MsgServer = Keeper{}
 
-//TODO
 func (m Keeper) CreateValidator(goCtx context.Context, msg *types.MsgCreateValidator) (*types.MsgCreateValidatorResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	_, _ = m.Keeper.CreateValidator(ctx, *msg)
-	return &types.MsgCreateValidatorResponse{}, nil
+	id, err := m.Keeper.CreateValidator(ctx, *msg)
+	if err != nil {
+		return &types.MsgCreateValidatorResponse{}, err
+	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreateValidator,
+			sdk.NewAttribute(types.AttributeKeyValidator, id.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Operator),
+		),
+	})
+
+	return &types.MsgCreateValidatorResponse{
+		Id: id.String(),
+	}, nil
 }
 
 func (m Keeper) UpdateValidator(_ context.Context, _ *types.MsgUpdateValidator) (*types.MsgUpdateValidatorResponse, error) {

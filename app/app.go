@@ -378,7 +378,7 @@ func NewSpartanApp(
 	)
 
 	app.randomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.bankKeeper, app.serviceKeeper)
-	app.permKeeper = permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey])
+	app.permKeeper = registerAccessControl(permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey]))
 	app.identityKeeper = identitykeeper.NewKeeper(appCodec, keys[identitytypes.StoreKey])
 
 	app.opbKeeper = opbkeeper.NewKeeper(
@@ -836,4 +836,11 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 
 	return paramsKeeper
+}
+
+func registerAccessControl(permKeeper perm.Keeper) perm.Keeper {
+	permKeeper.RegisterModuleAuth(perm.ModuleName, perm.RoleRootAdmin)
+	permKeeper.RegisterModuleAuth(nodetypes.ModuleName, perm.RoleRootAdmin)
+	permKeeper.RegisterModuleAuth(slashingtypes.ModuleName, perm.RoleRootAdmin)
+	return permKeeper
 }
