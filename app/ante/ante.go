@@ -14,16 +14,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	tokenkeeper "github.com/irisnet/irismod/modules/token/keeper"
-
-	evmmoduleante "github.com/bianjieai/irita/modules/evm"
-	"github.com/bianjieai/irita/modules/gas"
-	opbkeeper "github.com/bianjieai/irita/modules/opb/keeper"
-	wservicekeeper "github.com/bianjieai/irita/modules/wservice/keeper"
-	"github.com/bianjieai/iritamod/modules/perm"
-
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+
+	tokenkeeper "github.com/irisnet/irismod/modules/token/keeper"
+
+	opbkeeper "github.com/bianjieai/iritamod/modules/opb/keeper"
+	"github.com/bianjieai/iritamod/modules/perm"
+
+	evmante "github.com/bianjieai/spartan-cosmos/module/evm"
+	"github.com/bianjieai/spartan-cosmos/module/gas"
+	spartantypes "github.com/bianjieai/spartan-cosmos/types"
 )
 
 type HandlerOptions struct {
@@ -33,12 +34,11 @@ type HandlerOptions struct {
 	FeegrantKeeper  authante.FeegrantKeeper
 	TokenKeeper     tokenkeeper.Keeper
 	OpbKeeper       opbkeeper.Keeper
-	WserviceKeeper  wservicekeeper.IKeeper
 	SigGasConsumer  ante.SignatureVerificationGasConsumer
 	SignModeHandler signing.SignModeHandler
 
 	// evm config
-	EvmKeeper          evmmoduleante.EVMKeeper
+	EvmKeeper          evmante.EVMKeeper
 	EvmFeeMarketKeeper evmtypes.FeeMarketKeeper
 }
 
@@ -64,10 +64,10 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 						ante.NewMempoolFeeDecorator(),
 						ante.NewTxTimeoutHeightDecorator(),
 						ante.NewValidateMemoDecorator(options.AccountKeeper),
-						evmmoduleante.NewEthValidateBasicDecorator(options.EvmKeeper),
-						evmmoduleante.NewEthContractCallableDecorator(options.PermKeeper),
-						evmmoduleante.NewEthSigVerificationDecorator(options.EvmKeeper, options.AccountKeeper, options.SignModeHandler),
-						evmmoduleante.NewCanTransferDecorator(options.EvmKeeper, options.OpbKeeper, options.TokenKeeper, options.PermKeeper),
+						evmante.NewEthValidateBasicDecorator(options.EvmKeeper),
+						evmante.NewEthContractCallableDecorator(options.PermKeeper),
+						evmante.NewEthSigVerificationDecorator(options.EvmKeeper, options.AccountKeeper, options.SignModeHandler),
+						evmante.NewCanTransferDecorator(options.EvmKeeper, options.OpbKeeper, options.TokenKeeper, options.PermKeeper),
 
 						ethermintante.NewCanTransferDecorator(options.EvmKeeper),
 						ethermintante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.BankKeeper, options.EvmKeeper),
@@ -106,8 +106,7 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 				ante.NewRejectExtensionOptionsDecorator(),
 				ante.NewTxTimeoutHeightDecorator(),
 				tokenkeeper.NewValidateTokenFeeDecorator(options.TokenKeeper, options.BankKeeper),
-				opbkeeper.NewValidateTokenTransferDecorator(options.OpbKeeper, options.TokenKeeper, options.PermKeeper),
-				wservicekeeper.NewDeduplicationTxDecorator(options.WserviceKeeper),
+				opbkeeper.NewValidateTokenTransferDecorator(options.OpbKeeper, spartantypes.WrapTokenKeeper(options.TokenKeeper), options.PermKeeper),
 			)
 		default:
 			return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type: %T", tx)

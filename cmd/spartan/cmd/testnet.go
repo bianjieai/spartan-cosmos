@@ -50,12 +50,10 @@ import (
 
 	"github.com/bianjieai/iritamod/modules/genutil"
 	"github.com/bianjieai/iritamod/modules/node"
+	opbtypes "github.com/bianjieai/iritamod/modules/opb/types"
 	"github.com/bianjieai/iritamod/modules/perm"
 	"github.com/bianjieai/iritamod/utils"
 	cautil "github.com/bianjieai/iritamod/utils/ca"
-
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
-	opbtypes "github.com/bianjieai/irita/modules/opb/types"
 )
 
 const (
@@ -134,7 +132,6 @@ func InitTestnet(
 	if chainID == "" {
 		chainID = fmt.Sprintf("chain_%d-1", tmrand.Int63n(9999999999999)+1)
 	}
-	evmutils.SetEthermintSupportedAlgorithms()
 
 	monikers := make([]string, numValidators)
 	nodeIDs := make([]string, numValidators)

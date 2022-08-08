@@ -15,8 +15,6 @@ import (
 	ethclient "github.com/tharsis/ethermint/client"
 	clientkeys "github.com/tharsis/ethermint/client/keys"
 	etherminthd "github.com/tharsis/ethermint/crypto/hd"
-
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
 )
 
 // KeyCommand registers a sub-tree of commands to interact with
@@ -48,7 +46,6 @@ information:
 The pass backend requires GnuPG: https://gnupg.org/
 `,
 	}
-	evmutils.SetEthermintSupportedAlgorithms()
 	// support adding Ethereum supported keys
 	addCmd := keys.AddKeyCommand()
 
