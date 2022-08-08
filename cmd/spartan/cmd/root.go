@@ -37,11 +37,9 @@ import (
 	ethermintclient "github.com/tharsis/ethermint/client"
 	"github.com/tharsis/ethermint/crypto/hd"
 	"github.com/tharsis/ethermint/encoding"
+	evmserver "github.com/tharsis/ethermint/server"
 	servercfg "github.com/tharsis/ethermint/server/config"
 	ethermint "github.com/tharsis/ethermint/types"
-
-	evmserver "github.com/bianjieai/irita/modules/evm/server"
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
 
 	"github.com/bianjieai/spartan-cosmos/app"
 )
@@ -49,7 +47,6 @@ import (
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	//encodingConfig := app.MakeEncodingConfig()
-	evmutils.SetEthermintSupportedAlgorithms()
 	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
 
 	initClientCtx := client.Context{}.

@@ -92,6 +92,9 @@ import (
 	identitytypes "github.com/bianjieai/iritamod/modules/identity/types"
 	"github.com/bianjieai/iritamod/modules/node"
 	nodetypes "github.com/bianjieai/iritamod/modules/node/types"
+	"github.com/bianjieai/iritamod/modules/opb"
+	opbkeeper "github.com/bianjieai/iritamod/modules/opb/keeper"
+	opbtypes "github.com/bianjieai/iritamod/modules/opb/types"
 	"github.com/bianjieai/iritamod/modules/perm"
 	permkeeper "github.com/bianjieai/iritamod/modules/perm/keeper"
 	permtypes "github.com/bianjieai/iritamod/modules/perm/types"
@@ -99,7 +102,6 @@ import (
 
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	srvflags "github.com/tharsis/ethermint/server/flags"
-	ethermint "github.com/tharsis/ethermint/types"
 	"github.com/tharsis/ethermint/x/evm"
 	evmrest "github.com/tharsis/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
@@ -108,17 +110,8 @@ import (
 	feemarketkeeper "github.com/tharsis/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
 
-	appkeeper "github.com/bianjieai/irita/modules/evm"
-	evmmodule "github.com/bianjieai/irita/modules/evm"
-	"github.com/bianjieai/irita/modules/evm/crypto"
-	evmutils "github.com/bianjieai/irita/modules/evm/utils"
-	"github.com/bianjieai/irita/modules/opb"
-	opbkeeper "github.com/bianjieai/irita/modules/opb/keeper"
-	opbtypes "github.com/bianjieai/irita/modules/opb/types"
-	wservicekeeper "github.com/bianjieai/irita/modules/wservice/keeper"
-	wservicetypes "github.com/bianjieai/irita/modules/wservice/types"
-
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
+	spartanevm "github.com/bianjieai/spartan-cosmos/module/evm"
 	govkeeper "github.com/bianjieai/spartan-cosmos/module/gov/keeper"
 	govmodule "github.com/bianjieai/spartan-cosmos/module/gov/module"
 	nodeclient "github.com/bianjieai/spartan-cosmos/module/node/client"
@@ -244,7 +237,6 @@ type SpartanApp struct {
 	identityKeeper   identitykeeper.Keeper
 	nodeKeeper       nodekeeper.Keeper
 	opbKeeper        opbkeeper.Keeper
-	wservicekeeper   wservicekeeper.IKeeper
 	feeGrantKeeper   feegrantkeeper.Keeper
 	capabilityKeeper *capabilitykeeper.Keeper
 	govKeeper        govkeeper.Keeper
@@ -272,8 +264,6 @@ func NewSpartanApp(
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig, appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SpartanApp {
 	// TODO: Remove cdc in favor of appCodec once all modules are migrated.
-
-	evmutils.SetEthermintSupportedAlgorithms()
 
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
@@ -304,7 +294,6 @@ func NewSpartanApp(
 		identitytypes.StoreKey,
 		nodetypes.StoreKey,
 		opbtypes.StoreKey,
-		wservicetypes.StoreKey,
 
 		// evm
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
@@ -381,9 +370,10 @@ func NewSpartanApp(
 	app.permKeeper = registerAccessControl(permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey]))
 	app.identityKeeper = identitykeeper.NewKeeper(appCodec, keys[identitytypes.StoreKey])
 
+	wrappedTokenKeeper := spartantypes.WrapTokenKeeper(app.tokenKeeper)
 	app.opbKeeper = opbkeeper.NewKeeper(
 		appCodec, keys[opbtypes.StoreKey], app.accountKeeper,
-		app.bankKeeper, app.tokenKeeper, app.permKeeper,
+		app.bankKeeper, wrappedTokenKeeper, app.permKeeper,
 		app.GetSubspace(opbtypes.ModuleName),
 	)
 
@@ -396,13 +386,11 @@ func NewSpartanApp(
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.accountKeeper, app.bankKeeper, appkeeper.WNodeKeeper{Keeper: app.nodeKeeper.Keeper}, app.FeeMarketKeeper,
+		app.accountKeeper, app.bankKeeper, spartanevm.WNodeKeeper{Keeper: app.nodeKeeper.Keeper}, app.FeeMarketKeeper,
 		tracer, // debug EVM based on Baseapp options
 	)
 
 	app.EvmKeeper.AccStoreKey = keys[authtypes.StoreKey]
-
-	app.wservicekeeper = wservicekeeper.NewKeeper(appCodec, keys[wservicetypes.StoreKey], app.serviceKeeper)
 
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
@@ -616,7 +604,6 @@ func NewSpartanApp(
 			OpbKeeper:       app.opbKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.feeGrantKeeper,
-			WserviceKeeper:  app.wservicekeeper,
 			SigGasConsumer:  ethermintante.DefaultSigVerificationGasConsumer,
 
 			// evm
@@ -650,11 +637,7 @@ func (app *SpartanApp) Name() string { return app.BaseApp.Name() }
 
 // BeginBlocker application updates every begin block
 func (app *SpartanApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	chainID, _ := ethermint.ParseChainID(req.GetHeader().ChainID)
-	if app.EvmKeeper.Signer == nil {
-		app.EvmKeeper.Signer = crypto.NewSm2Signer(chainID)
-	}
-	validator := evmmodule.NewEthOpbValidator(
+	validator := spartanevm.NewEthOpbValidator(
 		ctx, app.opbKeeper, app.tokenKeeper, app.EvmKeeper, app.permKeeper)
 	app.EvmKeeper.Transfer = validator.Transfer
 	return app.mm.BeginBlock(ctx, req)
@@ -675,8 +658,6 @@ func (app *SpartanApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) a
 	app.appCodec.MustUnmarshalJSON(genesisState[servicetypes.ModuleName], &serviceGenState)
 	//req.ChainId
 
-	chainID, _ := ethermint.ParseChainID(req.ChainId)
-	app.EvmKeeper.Signer = crypto.NewSm2Signer(chainID)
 	serviceGenState.Definitions = append(serviceGenState.Definitions, servicetypes.GenOraclePriceSvcDefinition())
 	serviceGenState.Bindings = append(serviceGenState.Bindings, servicetypes.GenOraclePriceSvcBinding(tokentypes.GetNativeToken().MinUnit))
 	serviceGenState.Definitions = append(serviceGenState.Definitions, randomtypes.GetSvcDefinition())
