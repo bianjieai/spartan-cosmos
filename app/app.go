@@ -58,8 +58,10 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	sdkupgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	sdkupgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/irisnet/irismod/modules/mt"
 	mtkeeper "github.com/irisnet/irismod/modules/mt/keeper"
@@ -94,9 +96,6 @@ import (
 	permkeeper "github.com/bianjieai/iritamod/modules/perm/keeper"
 	permtypes "github.com/bianjieai/iritamod/modules/perm/types"
 	cslashing "github.com/bianjieai/iritamod/modules/slashing"
-	"github.com/bianjieai/iritamod/modules/upgrade"
-	upgradekeeper "github.com/bianjieai/iritamod/modules/upgrade/keeper"
-	upgradetypes "github.com/bianjieai/iritamod/modules/upgrade/types"
 
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	srvflags "github.com/tharsis/ethermint/server/flags"
@@ -162,6 +161,8 @@ var (
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		gov.NewAppModuleBasic(
+			upgradeclient.ProposalHandler,
+			upgradeclient.CancelProposalHandler,
 			paramsclient.ProposalHandler,
 			nodeclient.CreateValidatorProposalHandler,
 			nodeclient.UpdateValidatorProposalHandler,
@@ -348,8 +349,7 @@ func NewSpartanApp(
 	)
 	app.feeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.accountKeeper)
 
-	sdkUpgradeKeeper := sdkupgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.upgradeKeeper = upgradekeeper.NewKeeper(sdkUpgradeKeeper)
+	app.upgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -792,7 +792,7 @@ func (app *SpartanApp) RegisterTxService(clientCtx client.Context) {
 
 // RegisterUpgradePlan implements the upgrade execution logic of the upgrade module
 func (app *SpartanApp) RegisterUpgradePlan(planName string,
-	upgrades store.StoreUpgrades, upgradeHandler sdkupgrade.UpgradeHandler) {
+	upgrades store.StoreUpgrades, upgradeHandler upgradetypes.UpgradeHandler) {
 	upgradeInfo, err := app.upgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		app.Logger().Info("not found upgrade plan", "planName", planName, "err", err.Error())
@@ -803,7 +803,7 @@ func (app *SpartanApp) RegisterUpgradePlan(planName string,
 		// this configures a no-op upgrade handler for the planName upgrade
 		app.upgradeKeeper.SetUpgradeHandler(planName, upgradeHandler)
 		// configure store loader that checks if version+1 == upgradeHeight and applies store upgrades
-		app.SetStoreLoader(sdkupgrade.UpgradeStoreLoader(upgradeInfo.Height, &upgrades))
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrades))
 	}
 }
 
