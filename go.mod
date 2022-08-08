@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/bianjieai/irita v0.1.1-rc1.0.20220803033839-051e71212e3c
-	github.com/bianjieai/iritamod v1.2.1-0.20220706112746-f988d76b5406
+	github.com/bianjieai/iritamod v1.2.1-0.20220808064233-250cef2060c5
 	github.com/cosmos/cosmos-sdk v0.45.2
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
@@ -167,5 +167,4 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.8-irita-210413.0.20211012090339-cee6e09e8ae3
 	github.com/tharsis/ethermint => github.com/bianjieai/ethermint v0.6.1-0.20220707110413-bee9c01cb680
-	github.com/bianjieai/iritamod => /Users/zhangzhiqiang/workspace/github/bianjieai/iritamod
 )
