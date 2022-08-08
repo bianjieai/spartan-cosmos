@@ -41,4 +41,5 @@ message RemoveValidatorProposal {
   string title = 1;
   string summary = 2;
   string id    = 3;
+  string operator = 4;
 }

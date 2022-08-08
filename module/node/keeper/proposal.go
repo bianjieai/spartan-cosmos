@@ -8,15 +8,7 @@ import (
 )
 
 func (k *Keeper) handleValidatorCreateProposal(ctx sdk.Context, p *node.CreateValidatorProposal) error {
-	msg := &types.MsgCreateValidator{
-		Name:        p.Name,
-		Certificate: p.Certificate,
-		Power:       p.Power,
-		Description: p.Description,
-		Operator:    p.Operator,
-	}
-
-	id, err := k.Keeper.CreateValidator(ctx, *msg)
+	id, err := k.Keeper.CreateValidator(ctx, p.ToMsgCreateValidator())
 	if err != nil {
 		return err
 	}
@@ -29,23 +21,14 @@ func (k *Keeper) handleValidatorCreateProposal(ctx sdk.Context, p *node.CreateVa
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Operator),
+			sdk.NewAttribute(sdk.AttributeKeySender, p.Operator),
 		),
 	})
 	return nil
 }
 
 func (k *Keeper) handleValidatorUpdateProposal(ctx sdk.Context, p *node.UpdateValidatorProposal) error {
-	msg := &types.MsgUpdateValidator{
-		Id:          p.Id,
-		Name:        p.Name,
-		Certificate: p.Certificate,
-		Power:       p.Power,
-		Description: p.Description,
-		Operator:    p.Operator,
-	}
-
-	err := k.Keeper.UpdateValidator(ctx, *msg)
+	err := k.Keeper.UpdateValidator(ctx, p.ToMsgUpdateValidator())
 	if err != nil {
 		return err
 	}
@@ -53,23 +36,19 @@ func (k *Keeper) handleValidatorUpdateProposal(ctx sdk.Context, p *node.UpdateVa
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeUpdateValidator,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.Id),
+			sdk.NewAttribute(types.AttributeKeyValidator, p.Id),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Operator),
+			sdk.NewAttribute(sdk.AttributeKeySender, p.Operator),
 		),
 	})
 	return nil
 }
 
 func (k *Keeper) handleValidatorRemoveProposal(ctx sdk.Context, p *node.RemoveValidatorProposal) error {
-	msg := &types.MsgRemoveValidator{
-		Id: p.Id,
-	}
-
-	err := k.Keeper.RemoveValidator(ctx, *msg)
+	err := k.Keeper.RemoveValidator(ctx, p.ToMsgRemoveValidator())
 	if err != nil {
 		return err
 	}
@@ -77,12 +56,12 @@ func (k *Keeper) handleValidatorRemoveProposal(ctx sdk.Context, p *node.RemoveVa
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRemoveValidator,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.Id),
+			sdk.NewAttribute(types.AttributeKeyValidator, p.Id),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Operator),
+			sdk.NewAttribute(sdk.AttributeKeySender, p.Operator),
 		),
 	})
 	return nil
