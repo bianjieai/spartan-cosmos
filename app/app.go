@@ -1,6 +1,7 @@
 package app
 
 import (
+	ethermint "github.com/tharsis/ethermint/types"
 	"io"
 	"math"
 	"os"
@@ -319,7 +320,9 @@ func NewSpartanApp(
 
 	// add keepers
 	app.accountKeeper = authkeeper.NewAccountKeeper(
-		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms,
+		appCodec, keys[authtypes.StoreKey],
+		app.GetSubspace(authtypes.ModuleName),
+		ethermint.ProtoAccount, maccPerms,
 	)
 	app.bankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.accountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
@@ -389,8 +392,6 @@ func NewSpartanApp(
 		app.accountKeeper, app.bankKeeper, spartanevm.WNodeKeeper{Keeper: app.nodeKeeper.Keeper}, app.FeeMarketKeeper,
 		tracer, // debug EVM based on Baseapp options
 	)
-
-	app.EvmKeeper.AccStoreKey = keys[authtypes.StoreKey]
 
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
