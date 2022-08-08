@@ -55,13 +55,10 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=spartan \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-		  -X github.com/tendermint/tendermint/crypto/algo.Algo=sm2 \
 		  -X github.com/bianjieai/spartan-cosmos/address.Bech32ChainPrefix=i \
 		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAcc=a \
 		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAddress=a \
 		  -X github.com/tharsis/ethermint/types.EvmChainID=1223
-
-buildflags = -X github.com/tendermint/tendermint/crypto/algo.Algo=sm2
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb

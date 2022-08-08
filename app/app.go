@@ -48,14 +48,20 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	sdkupgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	sdkupgrade "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/irisnet/irismod/modules/mt"
 	mtkeeper "github.com/irisnet/irismod/modules/mt/keeper"
@@ -85,16 +91,11 @@ import (
 	identitykeeper "github.com/bianjieai/iritamod/modules/identity/keeper"
 	identitytypes "github.com/bianjieai/iritamod/modules/identity/types"
 	"github.com/bianjieai/iritamod/modules/node"
-	nodekeeper "github.com/bianjieai/iritamod/modules/node/keeper"
 	nodetypes "github.com/bianjieai/iritamod/modules/node/types"
-	cparams "github.com/bianjieai/iritamod/modules/params"
 	"github.com/bianjieai/iritamod/modules/perm"
 	permkeeper "github.com/bianjieai/iritamod/modules/perm/keeper"
 	permtypes "github.com/bianjieai/iritamod/modules/perm/types"
 	cslashing "github.com/bianjieai/iritamod/modules/slashing"
-	"github.com/bianjieai/iritamod/modules/upgrade"
-	upgradekeeper "github.com/bianjieai/iritamod/modules/upgrade/keeper"
-	upgradetypes "github.com/bianjieai/iritamod/modules/upgrade/types"
 
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	srvflags "github.com/tharsis/ethermint/server/flags"
@@ -117,8 +118,13 @@ import (
 	wservicekeeper "github.com/bianjieai/irita/modules/wservice/keeper"
 	wservicetypes "github.com/bianjieai/irita/modules/wservice/types"
 
-	"github.com/bianjieai/spartan-cosmos/address"
 	appante "github.com/bianjieai/spartan-cosmos/app/ante"
+	govkeeper "github.com/bianjieai/spartan-cosmos/module/gov/keeper"
+	govmodule "github.com/bianjieai/spartan-cosmos/module/gov/module"
+	nodeclient "github.com/bianjieai/spartan-cosmos/module/node/client"
+	nodekeeper "github.com/bianjieai/spartan-cosmos/module/node/keeper"
+	nodemodule "github.com/bianjieai/spartan-cosmos/module/node/module"
+	spartantypes "github.com/bianjieai/spartan-cosmos/types"
 )
 
 const appName = "SpartanApp"
@@ -134,7 +140,6 @@ var (
 		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		params.AppModuleBasic{},
-		cparams.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		cslashing.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
@@ -149,12 +154,20 @@ var (
 		random.AppModuleBasic{},
 		perm.AppModuleBasic{},
 		identity.AppModuleBasic{},
-		node.AppModuleBasic{},
+		nodemodule.AppModuleBasic{},
 		opb.AppModuleBasic{},
 
 		// evm
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
+		gov.NewAppModuleBasic(
+			upgradeclient.ProposalHandler,
+			upgradeclient.CancelProposalHandler,
+			paramsclient.ProposalHandler,
+			nodeclient.CreateValidatorProposalHandler,
+			nodeclient.UpdateValidatorProposalHandler,
+			nodeclient.RemoveValidatorProposalHandler,
+		),
 	)
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -163,6 +176,7 @@ var (
 		servicetypes.DepositAccName:         nil,
 		servicetypes.RequestAccName:         nil,
 		opbtypes.PointTokenFeeCollectorName: nil,
+		govtypes.ModuleName:                 {authtypes.Burner},
 
 		// evm
 		evmtypes.ModuleName: {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
@@ -182,11 +196,11 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, ".spartan")
 
-	address.ConfigureBech32Prefix()
+	spartantypes.ConfigureBech32Prefix()
 	tokentypes.SetNativeToken(
-		"spartan",
-		"Spartan base native token",
-		"uirita",
+		spartantypes.TokenSymbol,
+		spartantypes.TokenName,
+		spartantypes.TokenMinUnit,
 		6,
 		1000000000,
 		math.MaxUint64,
@@ -233,6 +247,7 @@ type SpartanApp struct {
 	wservicekeeper   wservicekeeper.IKeeper
 	feeGrantKeeper   feegrantkeeper.Keeper
 	capabilityKeeper *capabilitykeeper.Keeper
+	govKeeper        govkeeper.Keeper
 	// tibc
 	scopedTIBCKeeper     capabilitykeeper.ScopedKeeper
 	scopedTIBCMockKeeper capabilitykeeper.ScopedKeeper
@@ -273,6 +288,7 @@ func NewSpartanApp(
 		authtypes.StoreKey,
 		banktypes.StoreKey,
 		slashingtypes.StoreKey,
+		govtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
 		feegrant.StoreKey,
@@ -319,17 +335,21 @@ func NewSpartanApp(
 	app.bankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.accountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
 	)
-	app.nodeKeeper = node.NewKeeper(appCodec, keys[nodetypes.StoreKey], app.GetSubspace(node.ModuleName))
+
+	app.nodeKeeper = nodekeeper.NewKeeper(appCodec, keys[nodetypes.StoreKey], app.GetSubspace(node.ModuleName))
 	app.slashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &app.nodeKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
+	app.nodeKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(app.slashingKeeper.Hooks()),
+	)
+
 	app.crisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.bankKeeper, authtypes.FeeCollectorName,
 	)
 	app.feeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.accountKeeper)
 
-	sdkUpgradeKeeper := sdkupgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
-	app.upgradeKeeper = upgradekeeper.NewKeeper(sdkUpgradeKeeper)
+	app.upgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -358,14 +378,7 @@ func NewSpartanApp(
 	)
 
 	app.randomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.bankKeeper, app.serviceKeeper)
-
-	app.nodeKeeper = *app.nodeKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.slashingKeeper.Hooks()),
-	)
-
-	permKeeper := permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey])
-	app.permKeeper = appante.RegisterAccessControl(permKeeper)
-
+	app.permKeeper = registerAccessControl(permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey]))
 	app.identityKeeper = identitykeeper.NewKeeper(appCodec, keys[identitytypes.StoreKey])
 
 	app.opbKeeper = opbkeeper.NewKeeper(
@@ -383,13 +396,22 @@ func NewSpartanApp(
 	)
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.accountKeeper, app.bankKeeper, appkeeper.WNodeKeeper{Keeper: app.nodeKeeper}, app.FeeMarketKeeper,
+		app.accountKeeper, app.bankKeeper, appkeeper.WNodeKeeper{Keeper: app.nodeKeeper.Keeper}, app.FeeMarketKeeper,
 		tracer, // debug EVM based on Baseapp options
 	)
 
 	app.EvmKeeper.AccStoreKey = keys[authtypes.StoreKey]
 
 	app.wservicekeeper = wservicekeeper.NewKeeper(appCodec, keys[wservicetypes.StoreKey], app.serviceKeeper)
+
+	govRouter := govtypes.NewRouter()
+	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
+		AddRoute(nodetypes.RouterKey, app.nodeKeeper.ProposalHandler())
+	app.govKeeper = govkeeper.NewKeeper(
+		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.accountKeeper, app.bankKeeper,
+		&app.nodeKeeper, govRouter,
+	)
 
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
@@ -406,12 +428,12 @@ func NewSpartanApp(
 		auth.NewAppModule(appCodec, app.accountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper, skipGenesisInvariants),
+		govmodule.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
 		upgrade.NewAppModule(app.upgradeKeeper),
 		evidence.NewAppModule(app.evidenceKeeper),
 		params.NewAppModule(app.paramsKeeper),
-		cparams.NewAppModule(appCodec, app.paramsKeeper),
 		token.NewAppModule(appCodec, app.tokenKeeper, app.accountKeeper, app.bankKeeper),
 		nft.NewAppModule(appCodec, app.nftKeeper, app.accountKeeper, app.bankKeeper),
 		mt.NewAppModule(appCodec, app.mtKeeper, app.accountKeeper, app.bankKeeper),
@@ -421,7 +443,7 @@ func NewSpartanApp(
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
-		node.NewAppModule(appCodec, app.nodeKeeper),
+		nodemodule.NewAppModule(appCodec, app.nodeKeeper),
 		opb.NewAppModule(appCodec, app.opbKeeper),
 		// evm
 		evm.NewAppModule(app.EvmKeeper, app.accountKeeper),
@@ -440,6 +462,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -464,6 +487,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -496,6 +520,7 @@ func NewSpartanApp(
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
 		crisistypes.ModuleName,
+		govtypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
 		tokentypes.ModuleName,
@@ -521,6 +546,7 @@ func NewSpartanApp(
 		nodetypes.ModuleName,
 		banktypes.ModuleName,
 		slashingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		evidencetypes.ModuleName,
 		recordtypes.ModuleName,
@@ -553,8 +579,8 @@ func NewSpartanApp(
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.accountKeeper, app.bankKeeper, app.feeGrantKeeper, app.interfaceRegistry),
 		cslashing.NewAppModule(appCodec, cslashing.NewKeeper(app.slashingKeeper, app.nodeKeeper), app.accountKeeper, app.bankKeeper, app.nodeKeeper),
+		govmodule.NewAppModule(appCodec, app.govKeeper, app.accountKeeper, app.bankKeeper),
 		params.NewAppModule(app.paramsKeeper),
-		cparams.NewAppModule(appCodec, app.paramsKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
 		token.NewAppModule(appCodec, app.tokenKeeper, app.accountKeeper, app.bankKeeper),
 		nft.NewAppModule(appCodec, app.nftKeeper, app.accountKeeper, app.bankKeeper),
@@ -564,7 +590,7 @@ func NewSpartanApp(
 		random.NewAppModule(appCodec, app.randomKeeper, app.accountKeeper, app.bankKeeper),
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
-		node.NewAppModule(appCodec, app.nodeKeeper),
+		nodemodule.NewAppModule(appCodec, app.nodeKeeper),
 		opb.NewAppModule(appCodec, app.opbKeeper),
 		// evm
 		evm.NewAppModule(app.EvmKeeper, app.accountKeeper),
@@ -600,9 +626,6 @@ func NewSpartanApp(
 	)
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
-	// set peer filter by node ID
-	// TODO
-	app.SetIDPeerFilter(app.nodeKeeper.FilterNodeByID)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -769,7 +792,7 @@ func (app *SpartanApp) RegisterTxService(clientCtx client.Context) {
 
 // RegisterUpgradePlan implements the upgrade execution logic of the upgrade module
 func (app *SpartanApp) RegisterUpgradePlan(planName string,
-	upgrades store.StoreUpgrades, upgradeHandler sdkupgrade.UpgradeHandler) {
+	upgrades store.StoreUpgrades, upgradeHandler upgradetypes.UpgradeHandler) {
 	upgradeInfo, err := app.upgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		app.Logger().Info("not found upgrade plan", "planName", planName, "err", err.Error())
@@ -780,7 +803,7 @@ func (app *SpartanApp) RegisterUpgradePlan(planName string,
 		// this configures a no-op upgrade handler for the planName upgrade
 		app.upgradeKeeper.SetUpgradeHandler(planName, upgradeHandler)
 		// configure store loader that checks if version+1 == upgradeHeight and applies store upgrades
-		app.SetStoreLoader(sdkupgrade.UpgradeStoreLoader(upgradeInfo.Height, &upgrades))
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrades))
 	}
 }
 
@@ -806,10 +829,18 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(recordtypes.ModuleName)
 	paramsKeeper.Subspace(servicetypes.ModuleName)
 	paramsKeeper.Subspace(opbtypes.ModuleName)
+	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 
 	// evm
 	paramsKeeper.Subspace(evmtypes.ModuleName)
 	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 
 	return paramsKeeper
+}
+
+func registerAccessControl(permKeeper perm.Keeper) perm.Keeper {
+	permKeeper.RegisterModuleAuth(perm.ModuleName, perm.RoleRootAdmin)
+	permKeeper.RegisterModuleAuth(nodetypes.ModuleName, perm.RoleRootAdmin)
+	permKeeper.RegisterModuleAuth(slashingtypes.ModuleName, perm.RoleRootAdmin)
+	return permKeeper
 }

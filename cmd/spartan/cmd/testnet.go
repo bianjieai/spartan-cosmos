@@ -16,7 +16,8 @@ import (
 	"github.com/spf13/viper"
 
 	tmconfig "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/crypto/algo"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/libs/tempfile"
@@ -25,16 +26,18 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	evmhd "github.com/tharsis/ethermint/crypto/hd"
 	evmosConfig "github.com/tharsis/ethermint/server/config"
@@ -49,6 +52,7 @@ import (
 	"github.com/bianjieai/iritamod/modules/node"
 	"github.com/bianjieai/iritamod/modules/perm"
 	"github.com/bianjieai/iritamod/utils"
+	cautil "github.com/bianjieai/iritamod/utils/ca"
 
 	evmutils "github.com/bianjieai/irita/modules/evm/utils"
 	opbtypes "github.com/bianjieai/irita/modules/opb/types"
@@ -114,7 +118,7 @@ func testnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalance
 	cmd.Flags().String(flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
 	cmd.Flags().String(server.FlagMinGasPrices, fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom), "Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
-	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Sm2Type), "Key signing algorithm to generate keys for")
+	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Secp256k1Type), "Key signing algorithm to generate keys for")
 	return cmd
 }
 
@@ -127,7 +131,6 @@ func InitTestnet(
 	nodeDaemonHome, nodeCLIHome, startingIPAddress string,
 	numValidators int, algoStr string,
 ) error {
-	algo.Algo = algo.SM2
 	if chainID == "" {
 		chainID = fmt.Sprintf("chain_%d-1", tmrand.Int63n(9999999999999)+1)
 	}
@@ -136,6 +139,7 @@ func InitTestnet(
 	monikers := make([]string, numValidators)
 	nodeIDs := make([]string, numValidators)
 	valCerts := make([]string, numValidators)
+	validators := make([]node.Validator, numValidators)
 
 	iritaConfig := evmosConfig.DefaultConfig()
 	iritaConfig.MinGasPrices = minGasPrices
@@ -168,7 +172,6 @@ func InitTestnet(
 		nodeDirName := fmt.Sprintf("%s%d", nodeDirPrefix, i)
 		nodeDir := filepath.Join(outputDir, nodeDirName, nodeDaemonHome)
 		clientDir := filepath.Join(outputDir, nodeDirName, nodeCLIHome)
-		gentxsDir := filepath.Join(outputDir, "gentxs")
 
 		config.SetRoot(nodeDir)
 		config.RPC.ListenAddress = "tcp://0.0.0.0:26657"
@@ -185,12 +188,6 @@ func InitTestnet(
 
 		monikers[i] = nodeDirName
 		config.Moniker = nodeDirName
-
-		ip, err := getIP(i, startingIPAddress)
-		if err != nil {
-			_ = os.RemoveAll(outputDir)
-			return err
-		}
 
 		nodeKey, filePv, err := genutil.InitializeNodeValidatorFiles(config)
 		if err != nil {
@@ -216,7 +213,6 @@ func InitTestnet(
 		utils.IssueCert(cerPath, rootCertPath, rootKeyPath, certPath)
 		valCerts[i] = certPath
 
-		memo := fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 		genFiles = append(genFiles, config.GenesisFile())
 
 		kb, err := keyring.New(
@@ -254,12 +250,10 @@ func InitTestnet(
 			return err
 		}
 
-		accTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accPointTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accNativeTokens := sdk.TokensFromConsensusPower(5000, sdk.DefaultPowerReduction)
 		accEvmTokens := sdk.TokensFromConsensusPower(5000, PowerReduction)
 		coins := sdk.Coins{
-			sdk.NewCoin(fmt.Sprintf("%stoken", nodeDirName), accTokens),
 			sdk.NewCoin(DefaultPointMinUnit, accPointTokens),
 			sdk.NewCoin(tokentypes.GetNativeToken().MinUnit, accNativeTokens),
 			sdk.NewCoin(DefaultEvmMinUnit, accEvmTokens),
@@ -269,38 +263,36 @@ func InitTestnet(
 
 		genAccounts = append(genAccounts, authtypes.NewBaseAccount(addr, nil, 0, 0))
 
-		cert, err := ioutil.ReadFile(certPath)
-		if err != nil {
-			return err
-		}
-		msg := node.NewMsgCreateValidator(nodeDirName, nodeDirName, string(cert), 100, addr)
-
-		txBuilder := clientCtx.TxConfig.NewTxBuilder()
-		if err := txBuilder.SetMsgs(msg); err != nil {
-			return err
-		}
-
-		txBuilder.SetMemo(memo)
-
-		txFactory := tx.Factory{}
-		txFactory = txFactory.
-			WithChainID(chainID).
-			WithMemo(memo).
-			WithKeybase(kb).
-			WithTxConfig(clientCtx.TxConfig)
-
-		if err := tx.Sign(txFactory, nodeDirName, txBuilder, true); err != nil {
-			return err
-		}
-
-		txBz, err := clientCtx.TxConfig.TxJSONEncoder()(txBuilder.GetTx())
+		certBz, err := ioutil.ReadFile(certPath)
 		if err != nil {
 			return err
 		}
 
-		if err := writeFile(fmt.Sprintf("%v.json", nodeDirName), gentxsDir, txBz); err != nil {
+		cert, err := cautil.ReadCertificateFromMem([]byte(certBz))
+		if err != nil {
 			return err
 		}
+
+		pk, err := cautil.GetPubkeyFromCert(cert)
+		if err != nil {
+			return sdkerrors.Wrap(err, "invalid cert")
+		}
+
+		pubkey, err := cryptocodec.FromTmPubKeyInterface(pk)
+		if err != nil {
+			return err
+		}
+
+		msg := node.NewMsgCreateValidator(nodeDirName, nodeDirName, string(certBz), 100, addr)
+		validators[i] = node.NewValidator(
+			tmbytes.HexBytes(tmhash.Sum(msg.GetSignBytes())),
+			nodeDirName,
+			nodeDirName,
+			pubkey,
+			string(certBz),
+			100,
+			addr,
+		)
 
 		customAppTemplate, customAppConfig := evmosConfig.AppConfig(ethermint.AttoPhoton)
 		srvconfig.SetConfigTemplate(customAppTemplate)
@@ -312,17 +304,17 @@ func InitTestnet(
 		srvconfig.WriteConfigFile(iritaConfigFilePath, iritaConfig)
 	}
 
-	if err := initGenFiles(DefaultEvmMinUnit, clientCtx, mbm, chainID, genAccounts, genBalances, genFiles, numValidators,
+	if err := initGenFiles(DefaultEvmMinUnit, clientCtx, mbm, chainID, genAccounts, genBalances, genFiles, validators,
 		monikers, nodeIDs, rootCertPath); err != nil {
 		return err
 	}
 
-	if err := collectGenFiles(
-		clientCtx, config, chainID, monikers, nodeIDs, valCerts, numValidators,
-		outputDir, nodeDirPrefix, nodeDaemonHome,
-	); err != nil {
-		return err
-	}
+	// if err := collectGenFiles(
+	// 	clientCtx, config, chainID, monikers, nodeIDs, valCerts, numValidators,
+	// 	outputDir, nodeDirPrefix, nodeDaemonHome,
+	// ); err != nil {
+	// 	return err
+	// }
 
 	cmd.PrintErrf("Successfully initialized %d node directories\n", numValidators)
 	return nil
@@ -331,7 +323,7 @@ func InitTestnet(
 func initGenFiles(
 	coinDenom string, clientCtx client.Context, mbm module.BasicManager, chainID string,
 	genAccounts []authtypes.GenesisAccount, genBalances []banktypes.Balance,
-	genFiles []string, numValidators int, monikers []string, nodeIDs []string,
+	genFiles []string, validators []node.Validator, monikers []string, nodeIDs []string,
 	rootCertPath string,
 ) error {
 	rootCertBz, err := ioutil.ReadFile(rootCertPath)
@@ -348,7 +340,7 @@ func initGenFiles(
 	jsonMarshaler.MustUnmarshalJSON(appGenState[node.ModuleName], &nodeGenState)
 
 	nodeGenState.RootCert = rootCert
-
+	nodeGenState.Validators = validators
 	nodeGenState.Nodes = make([]node.Node, len(nodeIDs))
 	for i, nodeID := range nodeIDs {
 		nodeGenState.Nodes[i].Id = nodeID
@@ -382,7 +374,7 @@ func initGenFiles(
 
 	pointToken := tokentypes.Token{
 		Symbol:        DefaultPointDenom,
-		Name:          "Irita point token",
+		Name:          "Spartan Network Point Token",
 		Scale:         6,
 		MinUnit:       DefaultPointMinUnit,
 		InitialSupply: 1000000000,
@@ -393,7 +385,7 @@ func initGenFiles(
 
 	gasToken := tokentypes.Token{
 		Symbol:        NewEvmDenom,
-		Name:          "IRITA Fee Token",
+		Name:          "Spartan Network Fee Token",
 		Scale:         18,
 		MinUnit:       DefaultEvmMinUnit,
 		InitialSupply: 1000000000,
@@ -401,17 +393,18 @@ func initGenFiles(
 		Mintable:      true,
 		Owner:         genAccounts[0].GetAddress().String(),
 	}
+	nativeToken := tokentypes.GetNativeToken()
 
 	tokenGenState.Tokens = append(tokenGenState.Tokens, pointToken)
 	tokenGenState.Tokens = append(tokenGenState.Tokens, gasToken)
-	tokenGenState.Params.IssueTokenBaseFee = sdk.NewCoin(DefaultPointDenom, sdk.NewInt(60000))
+	tokenGenState.Params.IssueTokenBaseFee = sdk.NewCoin(nativeToken.Symbol, sdk.NewInt(60000))
 	appGenState[tokentypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&tokenGenState)
 
 	// modify the native token denoms in the opb genesis
 	var opbGenState opbtypes.GenesisState
 	jsonMarshaler.MustUnmarshalJSON(appGenState[opbtypes.ModuleName], &opbGenState)
 
-	opbGenState.Params.BaseTokenDenom = tokentypes.GetNativeToken().MinUnit
+	opbGenState.Params.BaseTokenDenom = nativeToken.MinUnit
 	opbGenState.Params.PointTokenDenom = DefaultPointMinUnit
 	appGenState[opbtypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&opbGenState)
 
@@ -419,7 +412,7 @@ func initGenFiles(
 	var crisisGenState crisistypes.GenesisState
 	jsonMarshaler.MustUnmarshalJSON(appGenState[crisistypes.ModuleName], &crisisGenState)
 
-	crisisGenState.ConstantFee.Denom = tokentypes.GetNativeToken().MinUnit
+	crisisGenState.ConstantFee.Denom = nativeToken.MinUnit
 	appGenState[crisistypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&crisisGenState)
 
 	// modify the constant fee denoms in the crisis genesis
@@ -455,6 +448,13 @@ func initGenFiles(
 	}
 	appGenState[perm.ModuleName] = jsonMarshaler.MustMarshalJSON(&permGenState)
 
+	var govGenState govtypes.GenesisState
+	clientCtx.Codec.MustUnmarshalJSON(appGenState[govtypes.ModuleName], &govGenState)
+	govGenState.DepositParams.MinDeposit = sdk.NewCoins(
+		sdk.NewCoin(nativeToken.MinUnit, sdk.NewInt(100)),
+	)
+	appGenState[govtypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&govGenState)
+
 	appGenStateJSON, err := json.MarshalIndent(appGenState, "", "  ")
 	if err != nil {
 		return err
@@ -467,7 +467,7 @@ func initGenFiles(
 	}
 
 	// generate empty genesis files for each validator and save
-	for i := 0; i < numValidators; i++ {
+	for i := 0; i < len(validators); i++ {
 		if err := genDoc.SaveAs(genFiles[i]); err != nil {
 			return err
 		}

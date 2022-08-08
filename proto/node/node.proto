@@ -1,0 +1,45 @@
+
+syntax = "proto3";
+package spartan.node;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/bianjieai/spartan-cosmos/module/node";
+option (gogoproto.goproto_getters_all) = false;
+
+// CreateValidatorProposal is a gov Content type for creating a validator
+message CreateValidatorProposal {
+  option (gogoproto.equal)            = true;
+
+  string title = 1;
+  string summary = 2;
+  string name = 3;
+  string certificate = 4;
+  int64  power = 5;
+  string description = 6;
+  string operator = 7;
+}
+
+// UpdateValidatorProposal is a gov Content type for updating a validator
+message UpdateValidatorProposal {
+  option (gogoproto.equal)            = true;
+
+  string title = 1;
+  string summary = 2;
+  string id = 3;
+  string name = 4;
+  string certificate = 5;
+  int64 power = 6;
+  string description = 7;
+  string operator = 8;
+}
+
+// RemoveValidatorProposal is a gov Content type for removing a validator
+message RemoveValidatorProposal {
+  option (gogoproto.equal)            = true;
+
+  string title = 1;
+  string summary = 2;
+  string id    = 3;
+  string operator = 4;
+}

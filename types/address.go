@@ -1,6 +1,14 @@
-package address
+package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+const (
+	TokenSymbol  = "snmt"
+	TokenName    = "Spartan Network Management token"
+	TokenMinUnit = "usnmt"
+)
 
 var (
 
