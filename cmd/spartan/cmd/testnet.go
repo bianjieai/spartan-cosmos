@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -27,7 +28,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
@@ -79,11 +79,11 @@ var (
 func testnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalancesIterator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "testnet",
-		Short: "Initialize files for a irita testnet",
+		Short: "Initialize files for a spartan testnet",
 		Long: "testnet will create \"v\" number of directories and populate each with " +
 			"necessary files (private validator, genesis, config, etc.).\n" +
 			"Note, strict routability for addresses is turned off in the config file.",
-		Example: "irita testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2",
+		Example: "spartan testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
@@ -116,7 +116,7 @@ func testnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalance
 	cmd.Flags().String(flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
 	cmd.Flags().String(server.FlagMinGasPrices, fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom), "Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
-	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Secp256k1Type), "Key signing algorithm to generate keys for")
+	cmd.Flags().String(flags.FlagKeyAlgorithm, string(evmhd.EthSecp256k1Type), "Key signing algorithm to generate keys for")
 	return cmd
 }
 
@@ -138,13 +138,13 @@ func InitTestnet(
 	valCerts := make([]string, numValidators)
 	validators := make([]node.Validator, numValidators)
 
-	iritaConfig := evmosConfig.DefaultConfig()
-	iritaConfig.MinGasPrices = minGasPrices
-	iritaConfig.API.Enable = true
-	iritaConfig.Telemetry.Enabled = true
-	iritaConfig.Telemetry.PrometheusRetentionTime = 60
-	iritaConfig.Telemetry.EnableHostnameLabel = false
-	iritaConfig.Telemetry.GlobalLabels = [][]string{{"chain_id", chainID}}
+	spartanConfig := evmosConfig.DefaultConfig()
+	spartanConfig.MinGasPrices = minGasPrices
+	spartanConfig.API.Enable = true
+	spartanConfig.Telemetry.Enabled = true
+	spartanConfig.Telemetry.PrometheusRetentionTime = 60
+	spartanConfig.Telemetry.EnableHostnameLabel = false
+	spartanConfig.Telemetry.GlobalLabels = [][]string{{"chain_id", chainID}}
 
 	//nolint:prealloc
 	var (
@@ -258,7 +258,10 @@ func InitTestnet(
 
 		genBalances = append(genBalances, banktypes.Balance{Address: addr.String(), Coins: coins.Sort()})
 
-		genAccounts = append(genAccounts, authtypes.NewBaseAccount(addr, nil, 0, 0))
+		genAccounts = append(genAccounts, &ethermint.EthAccount{
+			BaseAccount: authtypes.NewBaseAccount(addr, nil, 0, 0),
+			CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
+		})
 
 		certBz, err := ioutil.ReadFile(certPath)
 		if err != nil {
@@ -297,8 +300,8 @@ func InitTestnet(
 			return err
 		}
 
-		iritaConfigFilePath := filepath.Join(nodeDir, "config/app.toml")
-		srvconfig.WriteConfigFile(iritaConfigFilePath, iritaConfig)
+		spartanConfigFilePath := filepath.Join(nodeDir, "config/app.toml")
+		srvconfig.WriteConfigFile(spartanConfigFilePath, spartanConfig)
 	}
 
 	if err := initGenFiles(DefaultEvmMinUnit, clientCtx, mbm, chainID, genAccounts, genBalances, genFiles, validators,
