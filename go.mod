@@ -3,7 +3,7 @@ module github.com/bianjieai/spartan-cosmos
 go 1.18
 
 require (
-	github.com/bianjieai/iritamod v1.2.1-0.20220808091143-9a8ecd4957b3
+	github.com/bianjieai/iritamod v1.2.1-0.20220809083453-a38b88e9aac1
 	github.com/cosmos/cosmos-sdk v0.45.5-0.20220523154235-2921a1c3c918
 	github.com/ethereum/go-ethereum v1.10.16
 	github.com/gogo/protobuf v1.3.3
@@ -12,6 +12,7 @@ require (
 	github.com/irisnet/irismod v1.5.3-0.20220705030521-0c78477e6a75
 	github.com/olebedev/config v0.0.0-20190528211619-364964f3a8e4
 	github.com/pkg/errors v0.9.1
+	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
@@ -117,7 +118,6 @@ require (
 	github.com/prometheus/tsdb v0.7.1 // indirect
 	github.com/rakyll/statik v0.1.7 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/regen-network/cosmos-proto v0.3.1 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rs/zerolog v1.26.0 // indirect

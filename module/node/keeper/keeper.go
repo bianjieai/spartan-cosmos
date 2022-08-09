@@ -8,8 +8,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	nodekeeper "github.com/bianjieai/iritamod/modules/node/keeper"
-	"github.com/bianjieai/iritamod/modules/node/types"
-	cautil "github.com/bianjieai/iritamod/utils/ca"
 
 	"github.com/bianjieai/spartan-cosmos/module/node"
 )
@@ -19,15 +17,7 @@ type Keeper struct {
 }
 
 func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, ps paramtypes.Subspace) Keeper {
-	k := nodekeeper.NewKeeper(cdc, storeKey, ps)
-	k = k.SetVerifyCertFn(func(ctx sdk.Context, certStr string) (cert cautil.Cert, err error) {
-		cert, err = cautil.ReadCertificateFromMem([]byte(certStr))
-		if err != nil {
-			return cert, sdkerrors.Wrap(types.ErrInvalidCert, err.Error())
-		}
-		return cert, nil
-	})
-	return Keeper{Keeper: k}
+	return Keeper{Keeper: nodekeeper.NewKeeper(cdc, storeKey, ps)}
 }
 
 func (k *Keeper) ProposalHandler() govtypes.Handler {

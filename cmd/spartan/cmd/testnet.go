@@ -21,7 +21,6 @@ import (
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/libs/tempfile"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
@@ -32,7 +31,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -53,7 +51,6 @@ import (
 	opbtypes "github.com/bianjieai/iritamod/modules/opb/types"
 	"github.com/bianjieai/iritamod/modules/perm"
 	"github.com/bianjieai/iritamod/utils"
-	cautil "github.com/bianjieai/iritamod/utils/ca"
 )
 
 const (
@@ -135,7 +132,6 @@ func InitTestnet(
 
 	monikers := make([]string, numValidators)
 	nodeIDs := make([]string, numValidators)
-	valCerts := make([]string, numValidators)
 	validators := make([]node.Validator, numValidators)
 
 	spartanConfig := evmosConfig.DefaultConfig()
@@ -157,7 +153,6 @@ func InitTestnet(
 
 	rootKeyPath := filepath.Join(outputDir, "root_key.pem")
 	rootCertPath := filepath.Join(outputDir, "root_cert.pem")
-
 	if err := os.MkdirAll(outputDir, nodeDirPerm); err != nil {
 		_ = os.RemoveAll(outputDir)
 		return err
@@ -193,22 +188,6 @@ func InitTestnet(
 		}
 
 		nodeIDs[i] = string(nodeKey.ID())
-
-		key, err := genutil.Genkey(filePv.Key.PrivKey)
-		if err != nil {
-			_ = os.RemoveAll(outputDir)
-			return err
-		}
-		keyPath := filepath.Join(nodeDir, "config", "key.pem")
-		cerPath := filepath.Join(nodeDir, "config", "cer.pem")
-		certPath := filepath.Join(nodeDir, "config", "cert.pem")
-		if err = tempfile.WriteFileAtomic(keyPath, key, 0600); err != nil {
-			return err
-		}
-
-		utils.GenCertRequest(keyPath, cerPath, fmt.Sprintf("/C=CN/ST=test/L=test/O=test/OU=test/CN=%s", nodeDirName))
-		utils.IssueCert(cerPath, rootCertPath, rootKeyPath, certPath)
-		valCerts[i] = certPath
 
 		genFiles = append(genFiles, config.GenesisFile())
 
@@ -263,33 +242,22 @@ func InitTestnet(
 			CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
 		})
 
-		certBz, err := ioutil.ReadFile(certPath)
+		tmValPubKey, err := filePv.GetPubKey()
 		if err != nil {
 			return err
 		}
 
-		cert, err := cautil.ReadCertificateFromMem([]byte(certBz))
+		pubkey, err := cryptocodec.FromTmPubKeyInterface(tmValPubKey)
 		if err != nil {
 			return err
 		}
 
-		pk, err := cautil.GetPubkeyFromCert(cert)
-		if err != nil {
-			return sdkerrors.Wrap(err, "invalid cert")
-		}
-
-		pubkey, err := cryptocodec.FromTmPubKeyInterface(pk)
-		if err != nil {
-			return err
-		}
-
-		msg := node.NewMsgCreateValidator(nodeDirName, nodeDirName, string(certBz), 100, addr)
 		validators[i] = node.NewValidator(
-			tmbytes.HexBytes(tmhash.Sum(msg.GetSignBytes())),
+			tmbytes.HexBytes(tmhash.Sum(pubkey.Bytes())),
 			nodeDirName,
 			nodeDirName,
 			pubkey,
-			string(certBz),
+			"",
 			100,
 			addr,
 		)
@@ -330,8 +298,6 @@ func initGenFiles(
 	if err != nil {
 		return fmt.Errorf("failed to read root certificate: %s", err.Error())
 	}
-	rootCert := string(rootCertBz)
-
 	jsonMarshaler := clientCtx.Codec
 
 	appGenState := mbm.DefaultGenesis(jsonMarshaler)
@@ -339,7 +305,7 @@ func initGenFiles(
 	var nodeGenState node.GenesisState
 	jsonMarshaler.MustUnmarshalJSON(appGenState[node.ModuleName], &nodeGenState)
 
-	nodeGenState.RootCert = rootCert
+	nodeGenState.RootCert = string(rootCertBz)
 	nodeGenState.Validators = validators
 	nodeGenState.Nodes = make([]node.Node, len(nodeIDs))
 	for i, nodeID := range nodeIDs {
