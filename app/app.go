@@ -1,7 +1,6 @@
 package app
 
 import (
-	ethermint "github.com/tharsis/ethermint/types"
 	"io"
 	"math"
 	"os"
@@ -103,6 +102,7 @@ import (
 
 	ethermintante "github.com/tharsis/ethermint/app/ante"
 	srvflags "github.com/tharsis/ethermint/server/flags"
+	etherminttypes "github.com/tharsis/ethermint/types"
 	"github.com/tharsis/ethermint/x/evm"
 	evmrest "github.com/tharsis/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
@@ -322,7 +322,7 @@ func NewSpartanApp(
 	app.accountKeeper = authkeeper.NewAccountKeeper(
 		appCodec, keys[authtypes.StoreKey],
 		app.GetSubspace(authtypes.ModuleName),
-		ethermint.ProtoAccount, maccPerms,
+		etherminttypes.ProtoAccount, maccPerms,
 	)
 	app.bankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.accountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
