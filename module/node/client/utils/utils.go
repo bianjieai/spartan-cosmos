@@ -10,8 +10,18 @@ import (
 
 type (
 	ValidatorCreateProposalJSON struct {
-		Deposit string                       `json:"deposit"`
-		Content node.CreateValidatorProposal `json:"content"`
+		Deposit string                      `json:"deposit"`
+		Content CreateValidatorProposalJSON `json:"content"`
+	}
+
+	CreateValidatorProposalJSON struct {
+		Title       string `json:"title"`
+		Summary     string `json:"summary"`
+		Name        string `json:"name"`
+		Pubkey      string `json:"pubkey"`
+		Power       int64  `json:"power"`
+		Description string `json:"description"`
+		Operator    string `json:"operator"`
 	}
 
 	ValidatorUpdateProposalJSON struct {

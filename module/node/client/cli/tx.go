@@ -8,10 +8,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
+	"github.com/bianjieai/spartan-cosmos/module/node"
 	"github.com/bianjieai/spartan-cosmos/module/node/client/utils"
 )
 
@@ -63,7 +66,27 @@ Where proposal.json contains:
 				return err
 			}
 
-			msg, err := govtypes.NewMsgSubmitProposal(&proposal.Content, deposit, from)
+			var pk cryptotypes.PubKey
+			if err := clientCtx.Codec.UnmarshalInterfaceJSON([]byte(proposal.Content.Pubkey), &pk); err != nil {
+				return err
+			}
+
+			var pkAny *codectypes.Any
+			if pkAny, err = codectypes.NewAnyWithValue(pk); err != nil {
+				return err
+			}
+
+			content := &node.CreateValidatorProposal{
+				Title:       proposal.Content.Title,
+				Summary:     proposal.Content.Summary,
+				Name:        proposal.Content.Name,
+				Pubkey:      pkAny,
+				Power:       proposal.Content.Power,
+				Description: proposal.Content.Description,
+				Operator:    proposal.Content.Operator,
+			}
+
+			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}

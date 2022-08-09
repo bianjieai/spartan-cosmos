@@ -11,21 +11,26 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	cfg "github.com/tendermint/tendermint/config"
 	tmconfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/codec"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -35,6 +40,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	evmhd "github.com/tharsis/ethermint/crypto/hd"
@@ -47,6 +53,7 @@ import (
 	tokentypes "github.com/irisnet/irismod/modules/token/types"
 
 	"github.com/bianjieai/iritamod/modules/genutil"
+	genutiltypes "github.com/bianjieai/iritamod/modules/genutil/types"
 	"github.com/bianjieai/iritamod/modules/node"
 	opbtypes "github.com/bianjieai/iritamod/modules/opb/types"
 	"github.com/bianjieai/iritamod/modules/perm"
@@ -133,6 +140,7 @@ func InitTestnet(
 	monikers := make([]string, numValidators)
 	nodeIDs := make([]string, numValidators)
 	validators := make([]node.Validator, numValidators)
+	peers := make([]string, numValidators)
 
 	spartanConfig := evmosConfig.DefaultConfig()
 	spartanConfig.MinGasPrices = minGasPrices
@@ -181,6 +189,12 @@ func InitTestnet(
 		monikers[i] = nodeDirName
 		config.Moniker = nodeDirName
 
+		ip, err := getIP(i, startingIPAddress)
+		if err != nil {
+			_ = os.RemoveAll(outputDir)
+			return err
+		}
+
 		nodeKey, filePv, err := genutil.InitializeNodeValidatorFiles(config)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
@@ -188,6 +202,7 @@ func InitTestnet(
 		}
 
 		nodeIDs[i] = string(nodeKey.ID())
+		peers[i] = fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 
 		genFiles = append(genFiles, config.GenesisFile())
 
@@ -277,12 +292,12 @@ func InitTestnet(
 		return err
 	}
 
-	// if err := collectGenFiles(
-	// 	clientCtx, config, chainID, monikers, nodeIDs, valCerts, numValidators,
-	// 	outputDir, nodeDirPrefix, nodeDaemonHome,
-	// ); err != nil {
-	// 	return err
-	// }
+	if err := collectGenFiles(
+		clientCtx, config, chainID, monikers, nodeIDs, peers, numValidators,
+		outputDir, nodeDirPrefix, nodeDaemonHome,
+	); err != nil {
+		return err
+	}
 
 	cmd.PrintErrf("Successfully initialized %d node directories\n", numValidators)
 	return nil
@@ -442,9 +457,12 @@ func initGenFiles(
 }
 
 func collectGenFiles(
-	clientCtx client.Context, config *tmconfig.Config, chainID string,
-	monikers, nodeIDs []string, valCerts []string,
-	numValidators int, outputDir, nodeDirPrefix, nodeDaemonHome string,
+	clientCtx client.Context,
+	config *tmconfig.Config,
+	chainID string,
+	monikers, nodeIDs, peers []string,
+	numValidators int,
+	outputDir, nodeDirPrefix, nodeDaemonHome string,
 ) error {
 	var appState json.RawMessage
 	genTime := tmtime.Now()
@@ -452,20 +470,22 @@ func collectGenFiles(
 	for i := 0; i < numValidators; i++ {
 		nodeDirName := fmt.Sprintf("%s%d", nodeDirPrefix, i)
 		nodeDir := filepath.Join(outputDir, nodeDirName, nodeDaemonHome)
-		gentxsDir := filepath.Join(outputDir, "gentxs")
-		moniker := monikers[i]
 		config.Moniker = nodeDirName
 
 		config.SetRoot(nodeDir)
-
-		initCfg := genutil.NewInitConfig(chainID, gentxsDir, moniker, nodeIDs[i])
 
 		genDoc, err := types.GenesisDocFromFile(config.GenesisFile())
 		if err != nil {
 			return err
 		}
 
-		nodeAppState, err := genutil.GenAppStateFromConfig(clientCtx.Codec, clientCtx.TxConfig, config, initCfg, *genDoc)
+		nodeAppState, err := GenAppStateFromConfig(clientCtx.Codec,
+			clientCtx.TxConfig,
+			config,
+			*genDoc,
+			nodeIDs[i],
+			peers,
+		)
 		if err != nil {
 			return err
 		}
@@ -484,6 +504,60 @@ func collectGenFiles(
 	}
 
 	return nil
+}
+
+// GenAppStateFromConfig gets the genesis app state from the config
+func GenAppStateFromConfig(
+	cdc codec.JSONCodec,
+	txEncodingConfig client.TxEncodingConfig,
+	config *cfg.Config,
+	genDoc tmtypes.GenesisDoc,
+	nodeID string,
+	peers []string,
+) (appState json.RawMessage, err error) {
+
+	config.P2P.PersistentPeers = filterPeers(nodeID, peers)
+	cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
+
+	// create the app state
+	appGenesisState, err := genutiltypes.GenesisStateFromGenDoc(genDoc)
+	if err != nil {
+		return appState, err
+	}
+
+	appGenesisState, err = genutil.AddGenTxsInAppGenesisState(cdc, txEncodingConfig.TxJSONEncoder(), appGenesisState, []sdk.Tx{})
+	if err != nil {
+		return appState, err
+	}
+
+	appState, err = json.MarshalIndent(appGenesisState, "", "  ")
+	if err != nil {
+		return appState, err
+	}
+
+	genDoc.AppState = appState
+	err = genutil.ExportGenesisFile(&genDoc, config.GenesisFile())
+
+	return appState, err
+}
+
+func filterPeers(nodeID string, peers []string) string {
+	var dstPeers []string
+	for _, p := range peers {
+		if !strings.HasPrefix(p, nodeID) {
+			dstPeers = append(dstPeers, p)
+		}
+	}
+	if len(dstPeers) == 0 {
+		return ""
+	}
+
+	if len(dstPeers) == 1 {
+		return dstPeers[0]
+	}
+
+	sort.Strings(peers)
+	return strings.Join(peers, ",")
 }
 
 func getIP(i int, startingIPAddr string) (ip string, err error) {
