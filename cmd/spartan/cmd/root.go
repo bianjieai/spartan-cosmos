@@ -262,7 +262,7 @@ func (ac appCreator) appExport(
 		loadLatest = true
 	}
 
-	iritaApp := app.NewSpartanApp(
+	spartanApp := app.NewSpartanApp(
 		logger,
 		db,
 		traceStore,
@@ -275,10 +275,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := iritaApp.LoadHeight(height); err != nil {
+		if err := spartanApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return iritaApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return spartanApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }

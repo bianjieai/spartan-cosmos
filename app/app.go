@@ -37,7 +37,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
@@ -85,7 +84,6 @@ import (
 	tokenkeeper "github.com/irisnet/irismod/modules/token/keeper"
 	tokentypes "github.com/irisnet/irismod/modules/token/types"
 
-	"github.com/bianjieai/iritamod/modules/genutil"
 	genutiltypes "github.com/bianjieai/iritamod/modules/genutil"
 	"github.com/bianjieai/iritamod/modules/identity"
 	identitykeeper "github.com/bianjieai/iritamod/modules/identity/keeper"
@@ -131,7 +129,7 @@ var (
 	// and genesis verification.
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
-		genutil.AppModuleBasic{},
+		genutiltypes.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
@@ -220,30 +218,26 @@ type SpartanApp struct {
 	memKeys map[string]*sdk.MemoryStoreKey
 
 	// keepers
-	accountKeeper    authkeeper.AccountKeeper
-	bankKeeper       bankkeeper.Keeper
-	slashingKeeper   slashingkeeper.Keeper
-	crisisKeeper     crisiskeeper.Keeper
-	upgradeKeeper    upgradekeeper.Keeper
-	paramsKeeper     paramskeeper.Keeper
-	evidenceKeeper   evidencekeeper.Keeper
-	recordKeeper     recordkeeper.Keeper
-	tokenKeeper      tokenkeeper.Keeper
-	nftKeeper        nftkeeper.Keeper
-	mtKeeper         mtkeeper.Keeper
-	serviceKeeper    servicekeeper.Keeper
-	oracleKeeper     oraclekeeper.Keeper
-	randomKeeper     randomkeeper.Keeper
-	permKeeper       permkeeper.Keeper
-	identityKeeper   identitykeeper.Keeper
-	nodeKeeper       nodekeeper.Keeper
-	opbKeeper        opbkeeper.Keeper
-	feeGrantKeeper   feegrantkeeper.Keeper
-	capabilityKeeper *capabilitykeeper.Keeper
-	govKeeper        govkeeper.Keeper
-	// tibc
-	scopedTIBCKeeper     capabilitykeeper.ScopedKeeper
-	scopedTIBCMockKeeper capabilitykeeper.ScopedKeeper
+	accountKeeper  authkeeper.AccountKeeper
+	bankKeeper     bankkeeper.Keeper
+	slashingKeeper slashingkeeper.Keeper
+	crisisKeeper   crisiskeeper.Keeper
+	upgradeKeeper  upgradekeeper.Keeper
+	paramsKeeper   paramskeeper.Keeper
+	evidenceKeeper evidencekeeper.Keeper
+	recordKeeper   recordkeeper.Keeper
+	tokenKeeper    tokenkeeper.Keeper
+	nftKeeper      nftkeeper.Keeper
+	mtKeeper       mtkeeper.Keeper
+	serviceKeeper  servicekeeper.Keeper
+	oracleKeeper   oraclekeeper.Keeper
+	randomKeeper   randomkeeper.Keeper
+	permKeeper     permkeeper.Keeper
+	identityKeeper identitykeeper.Keeper
+	nodeKeeper     nodekeeper.Keeper
+	opbKeeper      opbkeeper.Keeper
+	feeGrantKeeper feegrantkeeper.Keeper
+	govKeeper      govkeeper.Keeper
 
 	// Ethermint keepers
 	EvmKeeper       *evmkeeper.Keeper
@@ -259,7 +253,7 @@ type SpartanApp struct {
 	configurator module.Configurator
 }
 
-// NewSpartanApp returns a reference to an initialized IritaApp.
+// NewSpartanApp returns a reference to an initialized SpartanApp.
 func NewSpartanApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig, appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
@@ -413,7 +407,7 @@ func NewSpartanApp(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
-		genutil.NewAppModule(app.accountKeeper, app.nodeKeeper, app.BaseApp.DeliverTx, encodingConfig.TxConfig),
+		genutiltypes.NewAppModule(app.accountKeeper, app.nodeKeeper, app.BaseApp.DeliverTx, encodingConfig.TxConfig),
 		auth.NewAppModule(appCodec, app.accountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.bankKeeper, app.accountKeeper),
 		crisis.NewAppModule(&app.crisisKeeper, skipGenesisInvariants),
@@ -687,7 +681,7 @@ func (app *SpartanApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-// LegacyAmino returns IritaApp's amino codec.
+// LegacyAmino returns SpartanApp's amino codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
@@ -695,7 +689,7 @@ func (app *SpartanApp) LegacyAmino() *codec.LegacyAmino {
 	return app.cdc
 }
 
-// AppCodec returns IritaApp's app codec.
+// AppCodec returns SpartanApp's app codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
@@ -703,7 +697,7 @@ func (app *SpartanApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
-// InterfaceRegistry returns IritaApp's InterfaceRegistry
+// InterfaceRegistry returns SpartanApp's InterfaceRegistry
 func (app *SpartanApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
 }

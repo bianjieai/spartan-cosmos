@@ -11,7 +11,7 @@ RUN set -eux; apk add --no-cache ca-certificates build-base;
 # Set up dependencies
 ENV PACKAGES make gcc git libc-dev bash openssl
 
-WORKDIR /irita
+WORKDIR /spartan
 
 # Add source files
 COPY . .

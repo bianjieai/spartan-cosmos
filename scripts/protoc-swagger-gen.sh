@@ -3,20 +3,20 @@
 set -eo pipefail
 
 IRISMOD_VERSION=v1.4.0
-IRITAMOD_VERSION=v1.0.0
+SPARTAN_VERSION=v1.0.0
 SDK_VERSION=v0.42.3-irita-210413
 
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/proto
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/third_party/proto
 chmod -R 755 ${GOPATH}/pkg/mod/github.com/irisnet/irismod@${IRISMOD_VERSION}/proto
-chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${IRITAMOD_VERSION}/proto
+chmod -R 755 ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${SPARTAN_VERSION}/proto
 
 rm -rf ./tmp-swagger-gen ./tmp && mkdir -p ./tmp-swagger-gen ./tmp/proto ./tmp/third_party
 
 cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/proto ./tmp && rm -rf ./tmp/proto/cosmos/mint
 cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/cosmos-sdk@${SDK_VERSION}/third_party/proto ./tmp/third_party
 cp -r ${GOPATH}/pkg/mod/github.com/irisnet/irismod@${IRISMOD_VERSION}/proto ./tmp
-cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${IRITAMOD_VERSION}/proto ./tmp
+cp -r ${GOPATH}/pkg/mod/github.com/bianjieai/iritamod@${SPARTAN_VERSION}/proto ./tmp
 mkdir -p ./tmp/proto/${WASMD_PROTO_DIR}
 cp -r ./proto ./tmp
 cp -r ./third_party/proto/cosmos ./tmp/third_party/proto/cosmos
@@ -52,9 +52,9 @@ swagger-combine ./lite/config.json -o ./lite/swagger-ui/swagger.yaml -f yaml --c
 sed -r -i '' 's/cosmos1[a-z,0-9]+/iaa1sltcyjm5k0edlg59t47lsyw8gtgc3nudklntcq/g' ./lite/swagger-ui/swagger.yaml
 sed -r -i '' 's/cosmosvaloper1[a-z,0-9]+/iva1sltcyjm5k0edlg59t47lsyw8gtgc3nudrwey98/g' ./lite/swagger-ui/swagger.yaml
 sed -r -i '' 's/cosmosvalconspub1[a-z,0-9]+/icp1zcjduepqwhwqn4h5v6mqa7k3kmy7cjzchsx5ptsrqaulwrgfmghy3k9jtdzs6rdddm/g' ./lite/swagger-ui/swagger.yaml
-sed -i '' 's/Gaia/IRITA/g' ./lite/swagger-ui/swagger.yaml
-sed -i '' 's/gaia/irita/g' ./lite/swagger-ui/swagger.yaml
-sed -i '' 's/cosmoshub/IRITA/g' ./lite/swagger-ui/swagger.yaml
+sed -i '' 's/Gaia/SPARTAN/g' ./lite/swagger-ui/swagger.yaml
+sed -i '' 's/gaia/spartan/g' ./lite/swagger-ui/swagger.yaml
+sed -i '' 's/cosmoshub/SPARTAN/g' ./lite/swagger-ui/swagger.yaml
 
 # clean swagger files
 rm -rf ./tmp-swagger-gen
