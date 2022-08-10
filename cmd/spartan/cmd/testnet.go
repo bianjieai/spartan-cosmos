@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
@@ -40,8 +41,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
 	evmhd "github.com/tharsis/ethermint/crypto/hd"
 	evmosConfig "github.com/tharsis/ethermint/server/config"
@@ -57,6 +58,7 @@ import (
 	"github.com/bianjieai/iritamod/modules/node"
 	opbtypes "github.com/bianjieai/iritamod/modules/opb/types"
 	"github.com/bianjieai/iritamod/modules/perm"
+
 	"github.com/bianjieai/iritamod/utils"
 )
 
@@ -141,6 +143,7 @@ func InitTestnet(
 	nodeIDs := make([]string, numValidators)
 	validators := make([]node.Validator, numValidators)
 	peers := make([]string, numValidators)
+	signingInfos := make([]slashingtypes.SigningInfo, numValidators)
 
 	spartanConfig := evmosConfig.DefaultConfig()
 	spartanConfig.MinGasPrices = minGasPrices
@@ -277,6 +280,23 @@ func InitTestnet(
 			addr,
 		)
 
+		consAddr, err := validators[i].GetConsAddr()
+		if err != nil {
+			return err
+		}
+
+		signingInfos[i] = slashingtypes.SigningInfo{
+			Address: consAddr.String(),
+			ValidatorSigningInfo: slashingtypes.NewValidatorSigningInfo(
+				consAddr,
+				0,
+				0,
+				time.Unix(0, 0),
+				false,
+				0,
+			),
+		}
+
 		customAppTemplate, customAppConfig := evmosConfig.AppConfig(ethermint.AttoPhoton)
 		srvconfig.SetConfigTemplate(customAppTemplate)
 		if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig); err != nil {
@@ -288,7 +308,7 @@ func InitTestnet(
 	}
 
 	if err := initGenFiles(DefaultEvmMinUnit, clientCtx, mbm, chainID, genAccounts, genBalances, genFiles, validators,
-		monikers, nodeIDs, rootCertPath); err != nil {
+		signingInfos, monikers, nodeIDs, rootCertPath); err != nil {
 		return err
 	}
 
@@ -306,7 +326,7 @@ func InitTestnet(
 func initGenFiles(
 	coinDenom string, clientCtx client.Context, mbm module.BasicManager, chainID string,
 	genAccounts []authtypes.GenesisAccount, genBalances []banktypes.Balance,
-	genFiles []string, validators []node.Validator, monikers []string, nodeIDs []string,
+	genFiles []string, validators []node.Validator, signingInfos []slashingtypes.SigningInfo, monikers []string, nodeIDs []string,
 	rootCertPath string,
 ) error {
 	rootCertBz, err := ioutil.ReadFile(rootCertPath)
@@ -327,8 +347,12 @@ func initGenFiles(
 		nodeGenState.Nodes[i].Id = nodeID
 		nodeGenState.Nodes[i].Name = monikers[i]
 	}
-
 	appGenState[node.ModuleName] = jsonMarshaler.MustMarshalJSON(&nodeGenState)
+
+	var slashingGenState slashingtypes.GenesisState
+	jsonMarshaler.MustUnmarshalJSON(appGenState[slashingtypes.ModuleName], &slashingGenState)
+	slashingGenState.SigningInfos = signingInfos
+	appGenState[slashingtypes.ModuleName] = jsonMarshaler.MustMarshalJSON(&slashingGenState)
 
 	// set the accounts in the genesis state
 	var authGenState authtypes.GenesisState
