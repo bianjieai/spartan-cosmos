@@ -17,7 +17,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
-	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -113,7 +112,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.GenKey(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
-		debug.Cmd(),
+		Cmd(),
 		config.Cmd(),
 		SnapshotCmd(),
 	)
@@ -262,7 +261,7 @@ func (ac appCreator) appExport(
 		loadLatest = true
 	}
 
-	iritaApp := app.NewSpartanApp(
+	spartanApp := app.NewSpartanApp(
 		logger,
 		db,
 		traceStore,
@@ -275,10 +274,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := iritaApp.LoadHeight(height); err != nil {
+		if err := spartanApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return iritaApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return spartanApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }

@@ -8,10 +8,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
+	"github.com/bianjieai/spartan-cosmos/module/node"
 	"github.com/bianjieai/spartan-cosmos/module/node/client/utils"
 )
 
@@ -35,7 +38,7 @@ Where proposal.json contains:
 		"title":"proposal title",
 		"summary":"proposal description",
 		"name":"node1",
-		"certificate":"-----BEGIN CERTIFICATE-----\nMIIBbDCCAR4CFGX5t8OFPrR8Ul/1JoXj3CFBBrBvMAUGAytlcDBYMQswCQYDVQQG\nEwJDTjENMAsGA1UECAwEcm9vdDENMAsGA1UEBwwEcm9vdDENMAsGA1UECgwEcm9v\ndDENMAsGA1UECwwEcm9vdDENMAsGA1UEAwwEcm9vdDAeFw0yMjA4MDUxMTA0Mzda\nFw0yMzA4MDUxMTA0MzdaMFkxCzAJBgNVBAYTAkNOMQ0wCwYDVQQIDAR0ZXN0MQ0w\nCwYDVQQHDAR0ZXN0MQ0wCwYDVQQKDAR0ZXN0MQ0wCwYDVQQLDAR0ZXN0MQ4wDAYD\nVQQDDAVub2RlMDAqMAUGAytlcAMhACJAXK+iRqiKcapdgM3aKrP39Mwp/gGjUDPS\nWo3+qM8vMAUGAytlcANBAP0JsV3l8PW65sxgxx3dBAQbagCDimvcxVtwIIF/rWPo\ndLTSmKoX6XNtyq5O5bU8Xj8mypeWqQd0SQe65MQqvQc=\n-----END CERTIFICATE-----\n",
+		"pubkey":"icp1zcjduepq0c8s6tgqy77emkxv5jkw4eu99ggwk5uyqty6vcxuvn8cvr3j8pkqlxnk76",
 	    "power":"100",
 	    "description":"my node1",
 	    "operator":"iaa104hrdtdkk5lfh8c3nc3pf20ad0sgdvselg0vxs"
@@ -63,7 +66,27 @@ Where proposal.json contains:
 				return err
 			}
 
-			msg, err := govtypes.NewMsgSubmitProposal(&proposal.Content, deposit, from)
+			var pk cryptotypes.PubKey
+			if err := clientCtx.Codec.UnmarshalInterfaceJSON([]byte(proposal.Content.Pubkey), &pk); err != nil {
+				return err
+			}
+
+			var pkAny *codectypes.Any
+			if pkAny, err = codectypes.NewAnyWithValue(pk); err != nil {
+				return err
+			}
+
+			content := &node.CreateValidatorProposal{
+				Title:       proposal.Content.Title,
+				Summary:     proposal.Content.Summary,
+				Name:        proposal.Content.Name,
+				Pubkey:      pkAny,
+				Power:       proposal.Content.Power,
+				Description: proposal.Content.Description,
+				Operator:    proposal.Content.Operator,
+			}
+
+			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
 				return err
 			}
@@ -94,7 +117,6 @@ Where proposal.json contains:
 		"summary":"proposal description",
 		"id":"xxxxxx",
 		"name":"node1",
-		"certificate":"-----BEGIN CERTIFICATE-----\nMIIBbDCCAR4CFGX5t8OFPrR8Ul/1JoXj3CFBBrBvMAUGAytlcDBYMQswCQYDVQQG\nEwJDTjENMAsGA1UECAwEcm9vdDENMAsGA1UEBwwEcm9vdDENMAsGA1UECgwEcm9v\ndDENMAsGA1UECwwEcm9vdDENMAsGA1UEAwwEcm9vdDAeFw0yMjA4MDUxMTA0Mzda\nFw0yMzA4MDUxMTA0MzdaMFkxCzAJBgNVBAYTAkNOMQ0wCwYDVQQIDAR0ZXN0MQ0w\nCwYDVQQHDAR0ZXN0MQ0wCwYDVQQKDAR0ZXN0MQ0wCwYDVQQLDAR0ZXN0MQ4wDAYD\nVQQDDAVub2RlMDAqMAUGAytlcAMhACJAXK+iRqiKcapdgM3aKrP39Mwp/gGjUDPS\nWo3+qM8vMAUGAytlcANBAP0JsV3l8PW65sxgxx3dBAQbagCDimvcxVtwIIF/rWPo\ndLTSmKoX6XNtyq5O5bU8Xj8mypeWqQd0SQe65MQqvQc=\n-----END CERTIFICATE-----\n",
 	    "power":"100",
 	    "description":"my node1",
 	    "operator":"iaa104hrdtdkk5lfh8c3nc3pf20ad0sgdvselg0vxs"
