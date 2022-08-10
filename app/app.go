@@ -69,11 +69,6 @@ import (
 	"github.com/irisnet/irismod/modules/nft"
 	nftkeeper "github.com/irisnet/irismod/modules/nft/keeper"
 	nfttypes "github.com/irisnet/irismod/modules/nft/types"
-	"github.com/irisnet/irismod/modules/oracle"
-	oraclekeeper "github.com/irisnet/irismod/modules/oracle/keeper"
-	oracletypes "github.com/irisnet/irismod/modules/oracle/types"
-	"github.com/irisnet/irismod/modules/random"
-	randomkeeper "github.com/irisnet/irismod/modules/random/keeper"
 	randomtypes "github.com/irisnet/irismod/modules/random/types"
 	"github.com/irisnet/irismod/modules/record"
 	recordkeeper "github.com/irisnet/irismod/modules/record/keeper"
@@ -144,8 +139,6 @@ var (
 		nft.AppModuleBasic{},
 		mt.AppModuleBasic{},
 		service.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		random.AppModuleBasic{},
 		perm.AppModuleBasic{},
 		identity.AppModuleBasic{},
 		nodemodule.AppModuleBasic{},
@@ -232,8 +225,6 @@ type SpartanApp struct {
 	nftKeeper        nftkeeper.Keeper
 	mtKeeper         mtkeeper.Keeper
 	serviceKeeper    servicekeeper.Keeper
-	oracleKeeper     oraclekeeper.Keeper
-	randomKeeper     randomkeeper.Keeper
 	permKeeper       permkeeper.Keeper
 	identityKeeper   identitykeeper.Keeper
 	nodeKeeper       nodekeeper.Keeper
@@ -289,8 +280,6 @@ func NewSpartanApp(
 		nfttypes.StoreKey,
 		mttypes.StoreKey,
 		servicetypes.StoreKey,
-		oracletypes.StoreKey,
-		randomtypes.StoreKey,
 		permtypes.StoreKey,
 		identitytypes.StoreKey,
 		nodetypes.StoreKey,
@@ -364,12 +353,6 @@ func NewSpartanApp(
 		app.GetSubspace(servicetypes.ModuleName), app.ModuleAccountAddrs(), opbtypes.PointTokenFeeCollectorName,
 	)
 
-	app.oracleKeeper = oraclekeeper.NewKeeper(
-		appCodec, keys[oracletypes.StoreKey], app.GetSubspace(oracletypes.ModuleName),
-		app.serviceKeeper,
-	)
-
-	app.randomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.bankKeeper, app.serviceKeeper)
 	app.permKeeper = registerAccessControl(permkeeper.NewKeeper(appCodec, keys[permtypes.StoreKey]))
 	app.identityKeeper = identitykeeper.NewKeeper(appCodec, keys[identitytypes.StoreKey])
 
@@ -427,8 +410,6 @@ func NewSpartanApp(
 		nft.NewAppModule(appCodec, app.nftKeeper, app.accountKeeper, app.bankKeeper),
 		mt.NewAppModule(appCodec, app.mtKeeper, app.accountKeeper, app.bankKeeper),
 		service.NewAppModule(appCodec, app.serviceKeeper, app.accountKeeper, app.bankKeeper),
-		oracle.NewAppModule(appCodec, app.oracleKeeper, app.accountKeeper, app.bankKeeper),
-		random.NewAppModule(appCodec, app.randomKeeper, app.accountKeeper, app.bankKeeper),
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
 		record.NewAppModule(appCodec, app.recordKeeper, app.accountKeeper, app.bankKeeper),
@@ -459,8 +440,6 @@ func NewSpartanApp(
 		nfttypes.ModuleName,
 		mttypes.ModuleName,
 		servicetypes.ModuleName,
-		oracletypes.ModuleName,
-		randomtypes.ModuleName,
 		identitytypes.ModuleName,
 		opb.ModuleName,
 		genutiltypes.ModuleName,
@@ -484,8 +463,6 @@ func NewSpartanApp(
 		nfttypes.ModuleName,
 		mttypes.ModuleName,
 		servicetypes.ModuleName,
-		oracletypes.ModuleName,
-		randomtypes.ModuleName,
 		identitytypes.ModuleName,
 		opb.ModuleName,
 		genutiltypes.ModuleName,
@@ -516,8 +493,6 @@ func NewSpartanApp(
 		nfttypes.ModuleName,
 		mttypes.ModuleName,
 		servicetypes.ModuleName,
-		oracletypes.ModuleName,
-		randomtypes.ModuleName,
 		identitytypes.ModuleName,
 		opb.ModuleName,
 		genutiltypes.ModuleName,
@@ -543,8 +518,6 @@ func NewSpartanApp(
 		nfttypes.ModuleName,
 		mttypes.ModuleName,
 		servicetypes.ModuleName,
-		oracletypes.ModuleName,
-		randomtypes.ModuleName,
 		identitytypes.ModuleName,
 		opb.ModuleName,
 		genutiltypes.ModuleName,
@@ -575,8 +548,6 @@ func NewSpartanApp(
 		nft.NewAppModule(appCodec, app.nftKeeper, app.accountKeeper, app.bankKeeper),
 		mt.NewAppModule(appCodec, app.mtKeeper, app.accountKeeper, app.bankKeeper),
 		service.NewAppModule(appCodec, app.serviceKeeper, app.accountKeeper, app.bankKeeper),
-		oracle.NewAppModule(appCodec, app.oracleKeeper, app.accountKeeper, app.bankKeeper),
-		random.NewAppModule(appCodec, app.randomKeeper, app.accountKeeper, app.bankKeeper),
 		perm.NewAppModule(appCodec, app.permKeeper),
 		identity.NewAppModule(app.identityKeeper),
 		nodemodule.NewAppModule(appCodec, app.nodeKeeper),
@@ -823,6 +794,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 func registerAccessControl(permKeeper perm.Keeper) perm.Keeper {
 	permKeeper.RegisterModuleAuth(perm.ModuleName, perm.RoleRootAdmin)
 	permKeeper.RegisterModuleAuth(nodetypes.ModuleName, perm.RoleRootAdmin)
-	permKeeper.RegisterModuleAuth(slashingtypes.ModuleName, perm.RoleRootAdmin)
+	permKeeper.RegisterModuleAuth(tokentypes.ModuleName, perm.RoleRootAdmin)
 	return permKeeper
 }
