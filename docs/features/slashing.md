@@ -1,4 +1,7 @@
 # Slashing
+## Overview
+
+_For Slashing commands, refer to [Slashing CLI client](../cli-client/slashing.md)_
 
 ## Summary
 

@@ -22,6 +22,8 @@ An identity consists of the following components.
 
 - _identity credential URI_: URI of the identity subject's off-chain credential information
 
+_For Identity commands, refer to [Identity CLI client](../cli-client/identity.md)_
+
 ## Functions
 
 ### Create
@@ -37,31 +39,3 @@ Currently supported public key algorithms include.
 - `SM2`: 33-byte compressed public key
 
 All public keys are represented by the `Hex` string.
-
-`CLI`
-
-```bash
-irita tx identity create --id=<identity-id> --pubkey=<public-key> --pubkey-algo=<public-key-algorithm> --cert-file=<certificate-file-path > --credentials=<credentials-uri>
-```
-
-### Update
-
-Updates the specified identity. Update operations include: adding a public key, adding a public key certificate, and changing the credential URI.
-
-``CLI``
-
-```bash
-spartan tx identity update <identity-id> --pubkey=<public-key> --pubkey-algo=<public-key-algorithm> --cert-file=<certificate-file-path> -- credentials=<new-credentials-uri>
-```
-
-### Query
-
-Query the specified identity.
-
-``CLI``
-
-```bash
-spartan query identity identity <id>
-```
-
-Translated with www.DeepL.com/Translator (free version)

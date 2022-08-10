@@ -2,16 +2,52 @@
 
 ## Oveview
 
-This module allows accounts to grant fee allowances and to use fees from their accounts. Grantees can execute any transaction without the need to maintain sufficient fees.
+The Feegrant module allows accounts to grant fee allowances and to use fees from their accounts. Grantees can execute any transaction without the need to maintain sufficient fees.
 
-In order to make blockchain transactions, the signing account must possess a sufficient balance of the right denomination in order to pay fees. There are classes of transactions where needing to maintain a wallet with sufficient fees is a barrier to adoption.
-
-For instance, when proper permissions are setup, someone may temporarily delegate the ability to vote on proposals to a "burner" account that is stored on a mobile phone with only minimal security.
-
-Other use cases include workers tracking items in a supply chain or farmers submitting field data for analytics or compliance purposes.
-
-For all of these use cases, UX would be significantly enhanced by obviating the need for these accounts to always maintain the appropriate fee balance. This is especially true if we wanted to achieve enterprise adoption for something like supply chain tracking.
-
-While one solution would be to have a service that fills up these accounts automatically with the appropriate fees, a better UX would be provided by allowing these accounts to pull from a common fee pool account with proper spending limits. A single pool would reduce the churn of making lots of small "fill up" transactions and also more effectively leverages the resources of the organization setting up the pool.
+_For Feegrant commands, refer to [Feegrant CLI client](../cli-client/feegrant.md)_
 
 ## Concepts
+
+### Grant
+
+`Grant` is stored in the KVStore to record a grant with full context. Every grant will contain `granter`, `grantee` and what kind of `allowance` is granted. `granter` is an account address who is giving permission to `grantee` (the beneficiary account address) to pay for some or all of `grantee`'s transaction fees. `allowance` defines what kind of fee allowance (`BasicAllowance` or `PeriodicAllowance`, see below) is granted to `grantee`. `allowance` accepts an interface which implements `FeeAllowanceI`, encoded as `Any` type. There can be only one existing fee grant allowed for a `grantee` and `granter`, self grants are not allowed.
+
+### Fee Allowance types
+
+There are two types of fee allowances present at the moment:
+
+- `BasicAllowance`
+- `PeriodicAllowance`
+- `AllowedMsgAllowance`
+
+### BasicAllowance
+
+`BasicAllowance` is permission for `grantee` to use fee from a `granter`'s account. If any of the `spend_limit` or `expiration` reaches its limit, the grant will be removed from the state.
+
+- `spend_limit` is the limit of coins that are allowed to be used from the `granter` account. If it is empty, it assumes there's no spend limit, `grantee` can use any number of available coins from `granter` account address before the expiration.
+
+- `expiration` specifies an optional time when this allowance expires. If the value is left empty, there is no expiry for the grant.
+
+- When a grant is created with empty values for `spend_limit` and `expiration`, it is still a valid grant. It won't restrict the `grantee` to use any number of coins from `granter` and it won't have any expiration. The only way to restrict the `grantee` is by revoking the grant.
+
+### PeriodicAllowance
+
+`PeriodicAllowance` is a repeating fee allowance for the mentioned period, we can mention when the grant can expire as well as when a period can reset. We can also define the maximum number of coins that can be used in a mentioned period of time.
+
+- `basic` is the instance of `BasicAllowance` which is optional for periodic fee allowance. If empty, the grant will have no `expiration` and no `spend_limit`.
+
+- `period` is the specific period of time, after each period passes, `period_can_spend` will be reset.
+
+- `period_spend_limit` specifies the maximum number of coins that can be spent in the period.
+
+- `period_can_spend` is the number of coins left to be spent before the period_reset time.
+
+- `period_reset` keeps track of when a next period reset should happen.
+
+### AllowedMsgAllowance
+
+`AllowedMsgAllowance` is a fee allowance, it can be any of `BasicFeeAllowance`, `PeriodicAllowance` but restricted only to the allowed messages mentioned by the granter.
+
+- `allowance` is either `BasicAllowance` or `PeriodicAllowance`.
+
+- `allowed_messages` is array of messages allowed to execute the given allowance.

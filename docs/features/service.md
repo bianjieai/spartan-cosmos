@@ -1,6 +1,7 @@
 # Service
+## Overview
 
-> **_NOTE:_** Commands shown in this document are for illustration purpose only.  For accurate syntax of commands, please refer to [cli docs](../cli-client/service.md).
+_For Service commands, refer to [Service CLI client](../cli-client/service.md)_
 
 ## Summary
 

@@ -1,8 +1,12 @@
 # NFT
 
-## Introduction
+## Overview
 
-`NFT` provides the ability to digitize assets. Through this module, each off-chain asset will be modeled as a unique on-chain nft.
+The NFT module provides the ability to digitize assets. Through this module, each off-chain asset will be modeled as a unique on-chain nft.
+
+_For NFT commands, refer to [NFT CLI client](../cli-client/nft.md)_
+
+## Concepts
 
 nft on the chain are identified by `ID`. With the help of the secure and non-tamperable features of the blockchain, the ownership of nft will be clarified. The transaction process of nft among members will also be publicly recorded to facilitate traceability and dispute settlement.
 
@@ -31,125 +35,3 @@ Each specific nft is described by the following elements:
 - _Metadata_: The structure containing the specific data of the nft
 
 - _Metadata URI_: When metadata is stored off-chain, this URI indicates its storage location
-
-## Features
-
-### issued
-
-Specify the nft Denom (nft classification) and metadata JSON Schema to issue nft.
-
-`CLI`
-
-```bash
-spartan tx nft issue <denom-id> --from=<key-name> --name=<denom-name> --schema=<schema-content or path/to/schema.json> --symbol=<denom-symbol> --mint-restricted=<mint-restricted>  --update-restricted=<update-restricted> --chain-id=<chain-id> --fees=<fee>
-```
-
-### transfer denom
-
-The owner of the NFT classification can transfer the ownership of the NFT classification to others.
-
-`CLI`
-
-```bash
-spartan tx nft transfer-denom <recipient> <denom-id>
-```
-
-### Additional issuance
-
-After the nft is issued, additional issuance (create) of specific nft of this type can be made. The denom ID, token ID, recipient address and URI must be specified.
-
-`CLI`
-
-```bash
-spartan tx nft mint <denom-id> <token-id> --uri=<uri> --recipient=<recipient> --from=<key-name> --chain-id=<chain-id> --fees=<fee>
-```
-
-### Edit
-
-The metadata of the specified nft can be updated.
-
-`CLI`
-
-```bash
-spartan tx nft edit <denom-id> <token-id> --uri=<uri> --from=<key-name> --chain-id=<chain-id> --fees=<fee>
-```
-
-### Transfer
-
-Transfer designated nft.
-
-`CLI`
-
-```bash
-spartan tx nft transfer <recipient-address> <denom-id> <token-id>
-```
-
-### Destroy
-
-You can destroy the created nft.
-
-`CLI`
-
-```bash
-spartan tx nft burn <denom-id> <token-id> --from=<key-name> --chain-id=<chain-id> --fees=<fee>
-```
-
-### Query the specified nft denom
-
-Query nft denom information based on Denom ID.
-
-`CLI`
-
-```bash
-spartan q nft denom <denom-id>
-```
-
-### Query all nft denom information
-
-Query all issued nft denom information.
-
-`CLI`
-
-```bash
-spartan q nft denoms
-```
-
-### Query the total amount of nft in a specified denom
-
-Query the total amount of nft according to Denom ID; accept the optional owner parameter.
-
-`CLI`
-
-```bash
-spartan q nft supply <denom-id> --owner=<owner>
-```
-
-### Query all nft of the specified account
-
-Query all nft owned by an account; you can specify the Denom ID parameter.
-
-`CLI`
-
-```bash
-spartan q nft owner <address> --denom-id=<denom-id>
-```
-
-### Query all nft of a specified denom
-
-Query all nft according to Denom ID.
-
-`CLI`
-
-```bash
-spartan q nft collection <denom-id>
-```
-
-### Query specified nft
-
-Query specific nft based on Denom ID and Token ID.
-
-`CLI`
-
-```bash
-spartan q nft token <denom-id> <token-id>
-```
