@@ -2,6 +2,6 @@
 order: 2
 ---
 
-# Install
+# Installation
 
 TODO

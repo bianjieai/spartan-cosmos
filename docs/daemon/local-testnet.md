@@ -2,6 +2,6 @@
 order: 3
 ---
 
-# Join the Mainnet
+# Local Testnet
 
 TODO

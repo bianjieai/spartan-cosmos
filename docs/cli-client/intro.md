@@ -23,7 +23,7 @@ All GET commands has the following global flags:
 | Name, shorthand | type   | Required | Default Value           | Description                          |
 | --------------- | ------ | -------- | ----------------------- | ------------------------------------ |
 | --chain-id      | string |          |                         | Chain ID of tendermint node          |
-| --home          | string |          | /home/username/.spartan | Directory for config and data        |
+| --home          | string |          | /$HOME/.spartan         | Directory for config and data        |
 | --trace         | string |          |                         | Print out full stack trace on errors |
 
 ### POST Commands
@@ -52,7 +52,7 @@ All POST commands have the following global flags:
 | --trust-node      | bool   |          | true                  | Don't verify proofs for responses                                                                              |
 | --yes             | bool   |          | true                  | Skip tx broadcasting prompt confirmation                                                                       |
 | --chain-id        | string |          |                       | Chain ID of tendermint node                                                                                    |
-| --home            | string |          |                       | Directory for config and data (default "/home/username/.spartan")                                              |
+| --home            | string |          |                       | Directory for config and data (default "/$HOME/.spartan")                                              |
 | --trace           | string |          |                       | Print out full stack trace on errors                                                                           |
 
 ## Module Commands
