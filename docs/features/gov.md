@@ -1,8 +1,8 @@
-# Governance => TODO
+# Governance
 
 ## Overview
 
-The Governance module enables Cosmos-SDK based blockchain to support an on-chain governance system.
+The Governance module enables the Spartan-Cosmos chain to support an on-chain governance system.
 
 _For Governance commands, refer to [Governance CLI client](../cli-client/gov.md)_
 
@@ -10,51 +10,32 @@ _For Governance commands, refer to [Governance CLI client](../cli-client/gov.md)
 
 The governance process is divided in a few steps that are outlined below:
 
-- **Proposal submission:** Proposal is submitted to the blockchain with a
-  deposit.
-- **Vote:** Once deposit reaches a certain value (`MinDeposit`), proposal is
-  confirmed and vote opens. Bonded Atom holders can then send `TxGovVote`
-  transactions to vote on the proposal.
+- **Proposal submission:** Proposal is submitted to the blockchain with a deposit.
+- **Vote:** Once deposit reaches a certain value (`MinDeposit`), proposal is confirmed and vote opens. Nodes can then send `TxGovVote` transactions to vote on the proposal, but only votes from validators are counted.
 - If the proposal involves a software upgrade:
-    - **Signal:** Validators start signaling that they are ready to switch to the
-    new version.
-    - **Switch:** Once more than 75% of validators have signaled that they are
-    ready to switch, their software automatically flips to the new version.
+  - **Signal:** Validators start signaling that they are ready to switch to the new version.
+  - **Switch:** Once more than 75% of validators have signaled that they are ready to switch, their software automatically flips to the new version.
 
 ## Proposal submission
 
-### Right to submit a proposal ==> TODO
+### Right to submit a proposal
 
-Any Atom holder, whether bonded or unbonded, can submit proposals by sending a
-`TxGovProposal` transaction. Once a proposal is submitted, it is identified by
+Any node can submit proposals by sending a `TxGovProposal` transaction. Once a proposal is submitted, it is identified by
 its unique `proposalID`.
 
 ### Proposal types
 
-In the initial version of the governance module, there are five types of
-proposals:
+In the initial version of the governance module, there are seven types of proposals:
 
-- `TextProposal` All the proposals that do not involve a modification of
-  the source code go under this type. For example, an opinion poll would use a
-  proposal of type `TextProposal`.
-- `SoftwareUpgradeProposal`. If accepted, validators are expected to update
-  their software in accordance with the proposal. They must do so by following
-  a 2-steps process described in the [Software Upgrade](#software-upgrade)
-  section below. Software upgrade roadmap may be discussed and agreed on via
-  `TextProposals`, but actual software upgrades must be performed via
-  `SoftwareUpgradeProposals`.
-- `CommunityPoolSpendProposal` details a proposal for use of community funds,
-  together with how many coins are proposed to be spent, and to which recipient account.
-- `ParameterChangeProposal` defines a proposal to change one or
-  more parameters. If accepted, the requested parameter change is updated
-  automatically by the proposal handler upon conclusion of the voting period.
+- `TextProposal` All the proposals that do not involve a modification of the source code go under this type. For example, an opinion poll would use a proposal of type `TextProposal`.
+- `SoftwareUpgradeProposal`. If accepted, validators are expected to update their software in accordance with the proposal. They must do so by following a 2-steps process described in the Software Upgrade. Software upgrade roadmap may be discussed and agreed on via `TextProposals`, but actual software upgrades must be performed via `SoftwareUpgradeProposals`.
 - `CancelSoftwareUpgradeProposal` is a gov Content type for cancelling a software upgrade.
+- `ParameterChangeProposal` defines a proposal to change one or more parameters. If accepted, the requested parameter change is updated automatically by the proposal handler upon conclusion of the voting period.
+- `CreationValidatorProposal` is the only way for a node to become a Validator into the network. The validator's power is specified in the proposal.
+- `RemoveValidatorProposal` propose to remove a Validator from the network.
+- `UpdateValidatorProposal` can update a Validator's information, such as its weight power. In Spartan-Cosmos, validators are not allowed to change their power in other ways.
 
-Other modules may expand upon the governance module by implementing their own
-proposal types and handlers. These types are registered and processed through the
-governance module (eg. `ParamChangeProposal`), which then execute the respective
-module's proposal handler when a proposal passes. This custom handler may perform
-arbitrary state changes.
+Other modules may expand upon the governance module by implementing their own proposal types and handlers. These types are registered and processed through the governance module (eg. `ParamChangeProposal`), which then execute the respective module's proposal handler when a proposal passes. This custom handler may perform arbitrary state changes.
 
 ## Deposit
 
@@ -75,36 +56,17 @@ When a the a proposal finalized, the coins from the deposit are either refunded 
 
 ### Participants
 
-_Participants_ are users that have the right to vote on proposals. On the
-Cosmos Hub, participants are bonded Atom holders. Unbonded Atom holders and
-other users do not get the right to participate in governance. However, they
-can submit and deposit on proposals.
+_Participants_ are users that have the right to vote on proposals. In Spartan-Cosmos, there's no limit on who can vote. However, only validators' votes are really counted.
 
-Note that some _participants_ can be forbidden to vote on a proposal under a
-certain validator if:
-
-- _participant_ bonded or unbonded Atoms to said validator after proposal
-  entered voting period.
-- _participant_ became validator after proposal entered voting period.
-
-This does not prevent _participant_ to vote with Atoms bonded to other
-validators. For example, if a _participant_ bonded some Atoms to validator A
-before a proposal entered voting period and other Atoms to validator B after
-proposal entered voting period, only the vote under validator B will be
-forbidden.
+Note that some _participants_ can be forbidden to vote on a proposal under a certain validator if  _participant_ became validator after proposal entered voting period.
 
 ### Voting period
 
-Once a proposal reaches `MinDeposit`, it immediately enters `Voting period`. We
-define `Voting period` as the interval between the moment the vote opens and
-the moment the vote closes. `Voting period` should always be shorter than
-`Unbonding period` to prevent double voting. The initial value of
-`Voting period` is 2 weeks.
+Once a proposal reaches `MinDeposit`, it immediately enters `Voting period`. We define `Voting period` as the interval between the moment the vote opens and the moment the vote closes. `Voting period` should always be shorter than `Unbonding period` to prevent double voting. The initial value of `Voting period` is 2 weeks.
 
 ### Option set
 
-The option set of a proposal refers to the set of choices a participant can
-choose from when casting its vote.
+The option set of a proposal refers to the set of choices a participant can choose from when casting its vote.
 
 The initial option set includes the following options:
 
@@ -128,16 +90,15 @@ Often times the entity owning that address might not be a single individual. For
 
 To represent weighted vote on chain, we use the following Protobuf message.
 
-+++ https://github.com/cosmos/cosmos-sdk/blob/v0.43.0-alpha1/proto/cosmos/gov/v1beta1/gov.proto#L32-L40
+- [WeightedVoteOption](https://github.com/cosmos/cosmos-sdk/blob/v0.43.0-alpha1/proto/cosmos/gov/v1beta1/gov.proto#L32-L40)
 
-+++ https://github.com/cosmos/cosmos-sdk/blob/v0.43.0-alpha1/proto/cosmos/gov/v1beta1/gov.proto#L126-L137
+- [Vote](https://github.com/cosmos/cosmos-sdk/blob/v0.43.0-alpha1/proto/cosmos/gov/v1beta1/gov.proto#L126-L137)
 
 For a weighted vote to be valid, the `options` field must not contain duplicate vote options, and the sum of weights of all options must be equal to 1.
 
 ### Quorum
 
-Quorum is defined as the minimum percentage of voting power that needs to be
-casted on a proposal for the result to be valid.
+Quorum is defined as the minimum percentage of voting power that needs to be casted on a proposal for the result to be valid.
 
 ### Threshold
 
@@ -151,17 +112,6 @@ that proposals are accepted if the proportion of `Yes` votes (excluding
 proportion of `NoWithVeto` votes is inferior to 1/3 (excluding `Abstain`
 votes).
 
-### Inheritance
-
-If a delegator does not vote, it will inherit its validator vote.
-
-- If the delegator votes before its validator, it will not inherit from the
-  validator's vote.
-- If the delegator votes after its validator, it will override its validator
-  vote with its own. If the proposal is urgent, it is possible
-  that the vote will close before delegators have a chance to react and
-  override their validator's vote. This is not a problem, as proposals require more than 2/3rd of the total voting power to pass before the end of the voting period. If more than 2/3rd of validators collude, they can censor the votes of delegators anyway.
-
 ### Validator’s punishment for non-voting
 
 At present, validators are not punished for failing to vote.
@@ -172,27 +122,14 @@ Later, we may add permissioned keys that could only sign txs from certain module
 
 ## Software Upgrade
 
-If proposals are of type `SoftwareUpgradeProposal`, then nodes need to upgrade
-their software to the new version that was voted. This process is divided in
-two steps.
+If proposals are of type `SoftwareUpgradeProposal`, then nodes need to upgrade their software to the new version that was voted. This process is divided in two steps.
 
 ### Signal
 
-After a `SoftwareUpgradeProposal` is accepted, validators are expected to
-download and install the new version of the software while continuing to run
-the previous version. Once a validator has downloaded and installed the
-upgrade, it will start signaling to the network that it is ready to switch by
-including the proposal's `proposalID` in its _precommits_.(_Note: Confirmation
-that we want it in the precommit?_)
+After a `SoftwareUpgradeProposal` is accepted, validators are expected to download and install the new version of the software while continuing to run the previous version. Once a validator has downloaded and installed the upgrade, it will start signaling to the network that it is ready to switch by including the proposal's `proposalID` in its _precommits_.(_Note: Confirmation that we want it in the precommit?_)
 
-Note: There is only one signal slot per _precommit_. If several
-`SoftwareUpgradeProposals` are accepted in a short timeframe, a pipeline will
-form and they will be implemented one after the other in the order that they
-were accepted.
+Note: There is only one signal slot per _precommit_. If several `SoftwareUpgradeProposals` are accepted in a short timeframe, a pipeline will form and they will be implemented one after the other in the order that they were accepted.
 
 ### Switch
 
-Once a block contains more than 2/3rd _precommits_ where a common
-`SoftwareUpgradeProposal` is signaled, all the nodes (including validator
-nodes, non-validating full nodes and light-nodes) are expected to switch to the
-new version of the software.
+Once a block contains more than 2/3rd _precommits_ where a common `SoftwareUpgradeProposal` is signaled, all the nodes (including validator nodes, non-validating full nodes and light-nodes) are expected to switch to the new version of the software.

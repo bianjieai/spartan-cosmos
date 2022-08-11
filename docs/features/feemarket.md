@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Feemarket module allows to define a global transaction fee for the network and has been designed to support EIP1559 in cosmos-sdk.
+The Feemarket module allows to define a global transaction fee for the network and has been designed to support EIP1559.
 
 The MempoolFeeDecorator in x/auth module needs to be overrided to check the baseFee along with the minimal-gas-prices allowing to implement a global fee mechanism which vary depending on the network activity.
 

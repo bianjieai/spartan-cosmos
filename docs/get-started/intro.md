@@ -4,17 +4,13 @@ order: 1
 
 # Introduction
 
-:::tip WARNING
-Since the network is not yet fully developed, this document is for primary reference only. With the development refined, various details will be added and revised.
-:::
-
 ## Spartan-Cosmos
 
-Spartan-Cosmos is a Non-Crypto Public Chain based on Cosmos-SDK, IRISnet, and IRITA implementations, which forms the BSN Spartan Network, together with other blockchains conforming to the BSN Non-Crypto Public Chain Transformation Instructions.
+The **Spartan-Cosmos** chain is a Non-Crypto Public Chain based on **Cosmos-SDK**, **IRISnet**, and **IRITA**, which forms **the BSN Spartan Network**, together with other blockchains conforming to the BSN Non-Crypto Public Chain Transformation Instructions.
 
 ### Node Management
 
-In Spartan Network exist two types of nodes: Accounting Node and Consensus Node. An Accounting Node can join and exit the network freely, while a Consensus Node is only allowed to join if they are voted on by the Spartan Governance System. 
+In Spartan Network exist two types of nodes: Accounting Node and Consensus Node. An Accounting Node can join and exit the network freely, while a Consensus Node is only allowed to join if voted on by the Spartan Governance System. 
 
 Spartan-Cosmos achieves this feature by introducing [the Gov module](../features/gov.md). A node will be selected as a Consensus Node, also known as a Validator in Cosmos-SDK based chain, only after it passes the voting process of an on-chain proposal for creating validators.
 
@@ -30,6 +26,6 @@ Unlike Crypto Public Chains, Energy Credit cannot be traded or transferred betwe
 
 Spartan-Cosmos uses [the OPB module](../features/opb.md) to place restrictions on account transactions and transfers. 
 
-### 
-
-Refer to **Features** to discover more about Spartan-Cosmos.  
+:::tip
+Refer to **[Features](../features/overview.md)** to discover more about Spartan-Cosmos.  
+:::

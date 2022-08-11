@@ -67,6 +67,7 @@ All POST commands have the following global flags:
 | [gov](./gov.md)             | Governance subcommands       |
 | [mt](./mt.md)               | MT subcommands               |
 | [nft](./nft.md)             | NFT subcommands              |
+| [opb](./opb.md)             | OPB subcommands              |
 | [params](./params.md)       | Query parameters of modules  |
 | [perm](./perm.md)           | Perm subcommands             |
 | [service](./service.md)     | Service subcommands          |

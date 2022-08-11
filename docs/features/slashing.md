@@ -1,11 +1,11 @@
 # Slashing
 ## Overview
 
+Collect the validator's abnormal behavior and implement the corresponding slashing mechanism according to the type of abnormal behavior.
+
 _For Slashing commands, refer to [Slashing CLI client](../cli-client/slashing.md)_
 
-## Summary
-
-Collect the validator's abnormal behavior and implement the corresponding slashing mechanism according to the type of abnormal behavior.
+## Concepts
 
 There are three main types:
 
@@ -13,7 +13,7 @@ There are three main types:
 2. Voted multiple times on the same consensus process, and these votes contradict each other
 3. The validator node disturbs the network consensus by packing illegal transactions into the block.
 
-## Punishment mechanism
+### Punishment mechanism
 
 1. Calculate the number of tokens bonded to the validator node based on the voting power owned by the current validator.
 2. Punish validator  with a certain percentage of the token and kick it out of the validator set; at the same time prohibit the validator from re-entering the validator set for a period, a process known as the jail validator.
@@ -26,7 +26,7 @@ There are three main types:
 
     4.3 The total number of tokens penalized for unbonding delegation and redelegation is S. If S is less than `A*B`, the validator token punished will be `A*B-S`. Otherwise, the validator bonded token will not be penalized.
 
-## Long Downtime
+### Long Downtime
 
 In the fixed time window `SignedBlocksWindow`, the ratio of the time of the validator's absence from the block is less than the value of `MinSignedPerWindow`, the validator's bonded token will be penalized in the `SlashFractionDowntime` ratio, and the validator will be jailed. Until the jail time exceeds `DowntimeJailDuration`, the validator can be released by executing `unjail` command.
 
@@ -37,7 +37,7 @@ In the fixed time window `SignedBlocksWindow`, the ratio of the time of the vali
 * `DowntimeJailDuration` default: 10Minutes
 * `SlashFractionDowntime` default: 0.0003
 
-## Double Sign
+### Double Sign
 
 When executing a block, it receives evidence that a validator has voted for conflicting votes of the same round at the same height. the validator's bonded token will be penalized in the `SlashFractionDoubleSign` ratio, and the validator will be jailed. Until the jail time exceeds `DoubleSignJailDuration`, the validator can be released by executing `unjail` command.
 

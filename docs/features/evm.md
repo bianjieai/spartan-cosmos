@@ -38,7 +38,7 @@ Smart contracts are just like regular accounts on the blockchain, which addition
 
 ### API-related features
 
-spartan supports all features of `EVM`. For the related `API` documentation, you can refer to: [EVM API](https://eth.wiki/json-rpc/API)
+Spartan-Cosmos supports all features of `EVM`. For the related `API` documentation, you can refer to: [EVM API](https://eth.wiki/json-rpc/API)
 
 ### Export the `ETH` private key of the account
 
@@ -50,4 +50,28 @@ spartan keys unsafe-export-eth-key [name]
 
 ```shell
 spartan keys unsafe-import-eth-key [name] [pk]
+```
+
+### spartan tx evm raw
+
+Build cosmos transaction from raw ethereum transaction
+
+```bash
+spartan tx evm raw [tx-hex] [flags]
+```
+
+### spartan query evm code
+
+Gets code from an account.
+
+```bash
+spartan query evm code [tx-hex] [flags]
+```
+
+### spartan query evm storage
+
+Gets storage for an account with a given key and height.
+
+```bash
+spartan query evm storage [address] [key] [flags]
 ```

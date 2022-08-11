@@ -6,7 +6,7 @@ order: 1
 
 This part introduces basic concepts in Spartan-Cosmos.
 
-| Name                    | Definition                                                         |
+| Name                    | Description                                                        |
 | ----------------------- | ------------------------------------------------------------------ |
 | [node](./node.md)       | The node types and their functionality in the Spartan Network      |
 | [account](./account.md) | The account and key system of the Spartan Network                  |

@@ -217,7 +217,7 @@ Query details of a service response.
 spartan query service response [request-id] [flags]
 ```
 
-## spartan query service xxx
+## spartan query service responses
 
 Query active responses by the request context ID and batch counter.
 
@@ -225,7 +225,7 @@ Query active responses by the request context ID and batch counter.
 spartan query service responses [request-context-id] [batch-counter] [flags]
 ```
 
-## spartan query service xxx
+## spartan query service schema
 
 Query the system schema by the schema name, only pricing and result allowed.
 
@@ -233,7 +233,7 @@ Query the system schema by the schema name, only pricing and result allowed.
 spartan query service schema [schema-name] [flags]
 ```
 
-## spartan query service xxx
+## spartan query service withdraw-addr
 
 Query the withdrawal address of an owner.
 

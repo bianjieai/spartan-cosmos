@@ -14,24 +14,24 @@ nft metadata (`metadata`) can be stored directly on the chain, or the `URI` of i
 
 nft need to be issued before creation to declare their abstract properties:
 
-- _Denom_: the globally unique nft classification name
+- **Denom:** the globally unique nft classification name
 
-- _Denom ID_: the globally unique nft classification identifier of Denom
+- **Denom ID:** the globally unique nft classification identifier of Denom
 
-- _Symbol_: the symbol of the token
+- **Symbol:** the symbol of the token
 
-- _Mint-restricted_: This field indicates whether there are restrictions on the issuance of NFTs under this classification, true means that only Denom owners can issue NFTs under this classification, false means anyone can
+- **Mint-restricted:** This field indicates whether there are restrictions on the issuance of NFTs under this classification, true means that only Denom owners can issue NFTs under this classification, false means anyone can
 
-- _Update-restricted_: This field indicates whether there are restrictions on updating NFTs under this classification, true means that no one under this classification can update the NFT, false means that only the owner of this NFT can update
+- **Update-restricted:** This field indicates whether there are restrictions on updating NFTs under this classification, true means that no one under this classification can update the NFT, false means that only the owner of this NFT can update
 
-- _Metadata Specification_: The JSON Schema that nft metadata should follow
+- **Metadata Specification:** The JSON Schema that nft metadata should follow
 
 Each specific nft is described by the following elements:
 
-- _Denom_: the classification of the nft
+- **Denom:** the classification of the nft
 
-- _ID_: The identifier of the nft, which is unique in this nft denom; this ID is generated off-chain
+- **ID:** The identifier of the nft, which is unique in this nft denom; this ID is generated off-chain
 
-- _Metadata_: The structure containing the specific data of the nft
+- **Metadata:** The structure containing the specific data of the nft
 
-- _Metadata URI_: When metadata is stored off-chain, this URI indicates its storage location
+- **Metadata URI:** When metadata is stored off-chain, this URI indicates its storage location

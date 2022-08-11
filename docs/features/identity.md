@@ -14,13 +14,13 @@ Key features include.
 
 An identity consists of the following components.
 
-- _ID_: a globally unique identity identifier
+- **ID:** a globally unique identity identifier
 
-- _public key list_: list of public keys for the identity subject
+- **public key list:** list of public keys for the identity subject
 
-- _public-key-certificate list_: list of public-key certificates for the identity subject
+- **public-key-certificate list:** list of public-key certificates for the identity subject
 
-- _identity credential URI_: URI of the identity subject's off-chain credential information
+- **identity credential URI:** URI of the identity subject's off-chain credential information
 
 _For Identity commands, refer to [Identity CLI client](../cli-client/identity.md)_
 
@@ -39,3 +39,7 @@ Currently supported public key algorithms include.
 - `SM2`: 33-byte compressed public key
 
 All public keys are represented by the `Hex` string.
+
+```bash
+spartan tx identity create [flags]
+```

@@ -1,4 +1,4 @@
-# Gov TODO
+# Gov
 
 The Gov module provides the basic functionalities for governance.
 

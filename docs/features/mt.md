@@ -12,11 +12,11 @@ On-chain assets are identified by`ID` . With the secure and tamper-proof nature
 
 Assets need to be issued before they are created to declare their abstract properties.
 
-- _DenomID_: the globally unique asset class identifier, which is generated on the chain.
-- _DenomName_: the name of the asset class.
+- **DenomID:** the globally unique asset class identifier, which is generated on the chain.
+- **DenomName:** the name of the asset class.
 
 Each specific asset is described by the following elements:
 
-- _DenomID_: the class of the asset.
-- _ID_: the identifier of the asset, which is unique within the corresponding asset class. This ID is also generated on the chain.
-- Metadata: a structure that contains specific data of the assets.
+- **DenomID:** the class of the asset.
+- **ID:** the identifier of the asset, which is unique within the corresponding asset class. This ID is also generated on the chain.
+- **Metadata:** a structure that contains specific data of the assets.

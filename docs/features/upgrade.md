@@ -1,6 +1,9 @@
 # Upgrade
 
 ## Overview
+
+The Upgrade module facilitates smoothly upgrading a live Spartan-Cosmos chain to a new (breaking) software version. It accomplishes this by providing a `BeginBlocker` hook that prevents the blockchain state machine from proceeding once a pre-defined upgrade block height has been reached.
+
 _For Upgrade commands, refer to [Upgrade CLI client](../cli-client/upgrade.md)_
 
 ## Concepts
@@ -126,7 +129,7 @@ spartan tx gov submit-proposal software-upgrade <plan-name> \
   --description <description>  \
   --from=<from> \
   --chain-id=<chain-id> \
-  --fees=0.3spartan \
+  --fees=0.3stake \
   -b block
 ```
 

@@ -24,7 +24,7 @@ echo "export PATH=$PATH:$GOBIN" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Verify that `go` has been installed successfully
+Verify that `go` has been installed successfully.
 
 ```bash
 go version
@@ -43,7 +43,7 @@ git checkout <version>
 make install
 ```
 
-Have you set up the Envrioment Variables correctly, you will get no error during `spartan` installation.
+Have you set up the Environment Variables correctly, you will get no error during `spartan` installation.
 
 Now check your `spartan` version.
 
