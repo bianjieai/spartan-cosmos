@@ -6,7 +6,7 @@ The Identity module builds a decentralized identity system (`DID`) that implemen
 
 Key features include.
 
-- The DID method is `irita`, and the full identity DID form is represented as: did:irita:id
+- The DID method is `spartan`, and the full identity DID form is represented as: did:spartan:id
 
 - The cryptographic material of the identity includes the public key as well as the public key certificate
 
