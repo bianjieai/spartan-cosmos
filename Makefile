@@ -75,7 +75,7 @@ all: tools install lint
 # The below include contains the tools.
 include contrib/devtools/Makefile
 
-build: go.sum
+build: go.sum clean
 ifeq ($(OS),Windows_NT)
 	go build $(BUILD_FLAGS) -o build/spartan.exe ./cmd/spartan
 else
@@ -112,7 +112,7 @@ go.sum: go.mod
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
 	go get github.com/RobotsAndPencils/goviz
-	@goviz -i ./cmd/irita -d 2 | dot -Tpng -o dependency-graph.png
+	@goviz -i ./cmd/spartan -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
 	rm -rf snapcraft-local.yaml build/ tmp-swagger-gen/
@@ -160,17 +160,17 @@ benchmark:
 
 ########################################
 ### Local validator nodes using docker and docker-compose
-build-docker-iritanode:
+build-docker-spartannode:
 	docker build -t bianjieai/spartan .
 
 localnet-init:
-	@if ! [ -f build/nodecluster/node0/spartan/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/home bianjieai/spartan spartan testnet --v 4 --output-dir /home/nodecluster --chain-id irita-test --keyring-backend test --starting-ip-address 192.168.10.2 ; fi
+	@if ! [ -f build/nodecluster/node0/spartan/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/home bianjieai/spartan spartan testnet --v 4 --output-dir /home/nodecluster --chain-id spartan-test --keyring-backend test --starting-ip-address 192.168.10.2 ; fi
 	@echo "To install jq command, please refer to this page: https://stedolan.github.io/jq/download/"
-	@cat build/nodecluster/node0/irita/config/genesis.json | jq '.app_state.auth.accounts+= [{"@type": "/cosmos.auth.v1beta1.BaseAccount","address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e"}]' | jq '.app_state.bank.balances+= [{"address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e","coins":[{"denom":"point","amount":"1000000000000"}]}]' > build/genesis_temp.json
-	@sudo cp build/genesis_temp.json build/nodecluster/node0/irita/config/genesis.json
-	@sudo cp build/genesis_temp.json build/nodecluster/node1/irita/config/genesis.json
-	@sudo cp build/genesis_temp.json build/nodecluster/node2/irita/config/genesis.json
-	@sudo cp build/genesis_temp.json build/nodecluster/node3/irita/config/genesis.json
+	@cat build/nodecluster/node0/spartan/config/genesis.json | jq '.app_state.auth.accounts+= [{"@type": "/cosmos.auth.v1beta1.BaseAccount","address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e"}]' | jq '.app_state.bank.balances+= [{"address":"iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e","coins":[{"denom":"point","amount":"1000000000000"}]}]' > build/genesis_temp.json
+	@sudo cp build/genesis_temp.json build/nodecluster/node0/spartan/config/genesis.json
+	@sudo cp build/genesis_temp.json build/nodecluster/node1/spartan/config/genesis.json
+	@sudo cp build/genesis_temp.json build/nodecluster/node2/spartan/config/genesis.json
+	@sudo cp build/genesis_temp.json build/nodecluster/node3/spartan/config/genesis.json
 	@rm build/genesis_temp.json
 	@echo "Faucet address: iaa15qgqfqk8uuej8ykjcyf7nse5n2avph0m92cu4e"
 	@echo "Faucet coin amount: 1000000000000point"

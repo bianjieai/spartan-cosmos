@@ -24,7 +24,7 @@ func NewCreateValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "create-validator [file]",
 		Args:  cobra.ExactArgs(1),
-		Short: "Submit a validator create proposal",
+		Short: "Submit a validator to create proposal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Submit a proposal along with an initial deposit.
 Example:
@@ -38,7 +38,7 @@ Where proposal.json contains:
 		"title":"proposal title",
 		"summary":"proposal description",
 		"name":"node1",
-		"pubkey":"icp1zcjduepq0c8s6tgqy77emkxv5jkw4eu99ggwk5uyqty6vcxuvn8cvr3j8pkqlxnk76",
+		"pubkey":"{\"@type\":\"/cosmos.crypto.ed25519.PubKey\",\"key\":\"FU1a1Yhu+eE0XlZWSwywZur2uItmtpYZGs8TpMK4im0=\"}",
 	    "power":"100",
 	    "description":"my node1",
 	    "operator":"iaa104hrdtdkk5lfh8c3nc3pf20ad0sgdvselg0vxs"
@@ -102,7 +102,7 @@ func NewUpdateValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update-validator [file]",
 		Args:  cobra.ExactArgs(1),
-		Short: "Submit a validator update proposal",
+		Short: "Submit a validator to update proposal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Submit a proposal along with an initial deposit.
 Example:
@@ -115,7 +115,7 @@ Where proposal.json contains:
 	"content":{
 		"title":"proposal title",
 		"summary":"proposal description",
-		"id":"xxxxxx",
+		"id":"3B0CB3D0CFD6590F1101543B9608CF590BB4CF9380C86407BA9DE1E7DA12F43E",
 		"name":"node1",
 	    "power":"100",
 	    "description":"my node1",
@@ -160,7 +160,7 @@ func NewRemoveValidatorProposalTxCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove-validator [file]",
 		Args:  cobra.ExactArgs(1),
-		Short: "Submit a validator remove proposal",
+		Short: "Submit a validator to remove proposal",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Submit a proposal along with an initial deposit.
 Example:
@@ -173,7 +173,7 @@ Where proposal.json contains:
 	"content":{
 		"title":"proposal title",
 		"summary":"proposal description",
-		"id":"xxxxxx",
+		"id":"3B0CB3D0CFD6590F1101543B9608CF590BB4CF9380C86407BA9DE1E7DA12F43E",
 	    "operator":"iaa104hrdtdkk5lfh8c3nc3pf20ad0sgdvselg0vxs"
 	}
 }
