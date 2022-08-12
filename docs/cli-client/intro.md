@@ -55,16 +55,18 @@ All POST commands have the following global flags:
 | --home            | string |          |                       | Directory for config and data (default "/$HOME/.spartan")                                              |
 | --trace           | string |          |                       | Print out full stack trace on errors                                                                           |
 
-## Module Commands
+## Subcommands
 
 | **Subcommand**              | **Description**              |
 | --------------------------- | ---------------------------- |
+| [auth](./auth.md)           | Auth subcommands             |
 | [bank](./bank.md)           | Bank subcommands             |
 | [evm](./evm.md)             | EVM subcommands              |
 | [feegrant](./feegrant.md)   | Feegrant subcommands         |
 | [feemarket](./feemarket.md) | Feemarket subcommands        |
 | [identity](./identity.md)   | Identity subcommands         |
 | [gov](./gov.md)             | Governance subcommands       |
+| [keys](./keys.md)           | Key management subcommands   |
 | [mt](./mt.md)               | MT subcommands               |
 | [nft](./nft.md)             | NFT subcommands              |
 | [opb](./opb.md)             | OPB subcommands              |

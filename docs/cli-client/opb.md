@@ -1,6 +1,6 @@
 # OPB
 
-The OPB module ....
+The OPB module restricts transfers between accounts.
 
 ## Available Commands
 

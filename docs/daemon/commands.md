@@ -24,7 +24,6 @@ spartan [command]
 | add-genesis-validator | Generate a genesis tx to create a validator                                                                                |
 | config                | Create or query an application CLI configuration file                                                                      |
 | export                | Export state to JSON                                                                                                       |
-| genkey                | generate key from the key file                                                                                             |
 | help                  | Help about any command                                                                                                     |
 | init                  | Initialize private validator, p2p, genesis, and application configuration files                                            |
 | keys                  | Manage your application's keys                                                                                             |
