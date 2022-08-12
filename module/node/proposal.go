@@ -41,16 +41,12 @@ func (sup *CreateValidatorProposal) GetDescription() string { return sup.Summary
 func (sup *CreateValidatorProposal) ProposalRoute() string  { return types.RouterKey }
 func (sup *CreateValidatorProposal) ProposalType() string   { return ProposalTypeCreateValidator }
 func (sup *CreateValidatorProposal) ValidateBasic() error {
-	if len(sup.Title) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "title missing")
-	}
-
-	if len(sup.Summary) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "summary missing")
+	if err := govtypes.ValidateAbstract(sup); err != nil {
+		return err
 	}
 
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {
@@ -78,27 +74,23 @@ func (sup *UpdateValidatorProposal) GetDescription() string { return sup.Summary
 func (sup *UpdateValidatorProposal) ProposalRoute() string  { return types.RouterKey }
 func (sup *UpdateValidatorProposal) ProposalType() string   { return ProposalTypeUpdateValidator }
 func (sup *UpdateValidatorProposal) ValidateBasic() error {
-	if len(sup.Title) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "title missing")
-	}
-
-	if len(sup.Summary) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "summary missing")
+	if err := govtypes.ValidateAbstract(sup); err != nil {
+		return err
 	}
 
 	if len(sup.Id) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "validator id missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "validator cannot be blank")
 	}
 
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid operator")
 	}
 
-	if sup.Power < 0 {
+	if sup.Power <= 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "power must be positive")
 	}
 	return nil
@@ -109,8 +101,12 @@ func (sup *RemoveValidatorProposal) GetDescription() string { return sup.Summary
 func (sup *RemoveValidatorProposal) ProposalRoute() string  { return types.RouterKey }
 func (sup *RemoveValidatorProposal) ProposalType() string   { return ProposalTypeRemoveValidator }
 func (sup *RemoveValidatorProposal) ValidateBasic() error {
+	if err := govtypes.ValidateAbstract(sup); err != nil {
+		return err
+	}
+
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {

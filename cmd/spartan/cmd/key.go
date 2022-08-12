@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
-	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
@@ -51,8 +50,8 @@ The pass backend requires GnuPG: https://gnupg.org/
 
 	// update the default signing algorithm value to "eth_secp256k1"
 	algoFlag := addCmd.Flag("algo")
-	algoFlag.DefValue = string(cosmoshd.Secp256k1Type)
-	err := algoFlag.Value.Set(string(cosmoshd.Secp256k1Type))
+	algoFlag.DefValue = string(etherminthd.EthSecp256k1Type)
+	err := algoFlag.Value.Set(string(etherminthd.EthSecp256k1Type))
 	if err != nil {
 		panic(err)
 	}

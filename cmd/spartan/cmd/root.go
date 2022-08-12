@@ -101,18 +101,12 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		ethermintclient.ValidateChainID(
 			genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		),
-		//genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
-		//genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
-		//genutilcli.MigrateGenesisCmd(),
-		GenRootCert(app.DefaultNodeHome),
-		//genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome, app.DefaultNodeHome),
 		AddGenesisValidatorCmd(app.ModuleBasics, node.AppModuleBasic{}, app.DefaultNodeHome, app.DefaultNodeHome),
-		genutilcli.GenKey(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
-		Cmd(),
+		DebugCmd(),
 		config.Cmd(),
 		SnapshotCmd(),
 	)
@@ -236,6 +230,7 @@ func (ac appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, 
 		baseapp.SetSnapshotStore(snapshotStore),
 		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
 		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
+		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get("iavl-cache-size"))),
 	)
 }
 
