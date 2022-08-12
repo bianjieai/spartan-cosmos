@@ -46,7 +46,7 @@ func (sup *CreateValidatorProposal) ValidateBasic() error {
 	}
 
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {
@@ -79,18 +79,18 @@ func (sup *UpdateValidatorProposal) ValidateBasic() error {
 	}
 
 	if len(sup.Id) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "validator id missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "validator cannot be blank")
 	}
 
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid operator")
 	}
 
-	if sup.Power < 0 {
+	if sup.Power <= 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "power must be positive")
 	}
 	return nil
@@ -106,7 +106,7 @@ func (sup *RemoveValidatorProposal) ValidateBasic() error {
 	}
 
 	if len(sup.Operator) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator missing")
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "operator cannot be blank")
 	}
 
 	if _, err := sdk.AccAddressFromBech32(sup.Operator); err != nil {

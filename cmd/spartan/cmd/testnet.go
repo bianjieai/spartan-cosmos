@@ -342,11 +342,6 @@ func initGenFiles(
 
 	nodeGenState.RootCert = string(rootCertBz)
 	nodeGenState.Validators = validators
-	nodeGenState.Nodes = make([]node.Node, len(nodeIDs))
-	for i, nodeID := range nodeIDs {
-		nodeGenState.Nodes[i].Id = nodeID
-		nodeGenState.Nodes[i].Name = monikers[i]
-	}
 	appGenState[node.ModuleName] = jsonMarshaler.MustMarshalJSON(&nodeGenState)
 
 	var slashingGenState slashingtypes.GenesisState

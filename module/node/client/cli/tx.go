@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -64,6 +65,10 @@ Where proposal.json contains:
 			deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)
 			if err != nil {
 				return err
+			}
+
+			if len(proposal.Content.Pubkey) == 0 {
+				return errors.New("pubkey cannot be blank")
 			}
 
 			var pk cryptotypes.PubKey

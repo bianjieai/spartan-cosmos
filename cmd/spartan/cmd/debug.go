@@ -16,8 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 )
 
-// Cmd creates a main CLI command
-func Cmd() *cobra.Command {
+// DebugCmd creates a main CLI command
+func DebugCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "debug",
 		Short: "Tool for helping with debugging your application",
