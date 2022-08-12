@@ -4,6 +4,7 @@ vendor
 .vscode
 build/
 .out
+docs/.obsidian
 docs/.vuepress/dist/
 node_modules/
 yarn.lock
