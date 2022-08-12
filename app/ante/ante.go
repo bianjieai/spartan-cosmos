@@ -61,20 +61,14 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 					// handle as *evmtypes.MsgEthereumTx
 					anteHandler = sdk.ChainAnteDecorators(
 						ethermintante.NewEthSetUpContextDecorator(options.EvmKeeper), // outermost AnteDecorator. SetUpContext must be called first
-						ante.NewMempoolFeeDecorator(),
-						ante.NewTxTimeoutHeightDecorator(),
-						ante.NewValidateMemoDecorator(options.AccountKeeper),
 						evmante.NewEthValidateBasicDecorator(options.EvmKeeper),
 						evmante.NewEthContractCallableDecorator(options.PermKeeper),
 						evmante.NewEthSigVerificationDecorator(options.EvmKeeper, options.AccountKeeper, options.SignModeHandler),
 						evmante.NewCanTransferDecorator(options.EvmKeeper, options.OpbKeeper, options.TokenKeeper, options.PermKeeper),
-
-						ethermintante.NewCanTransferDecorator(options.EvmKeeper),
 						ethermintante.NewEthAccountVerificationDecorator(options.AccountKeeper, options.BankKeeper, options.EvmKeeper),
 						ethermintante.NewEthGasConsumeDecorator(options.EvmKeeper),
 						ethermintante.NewEthIncrementSenderSequenceDecorator(options.AccountKeeper), // innermost AnteDecorator.
 						ethermintante.NewEthMempoolFeeDecorator(options.EvmKeeper),                  // Check eth effective gas price against minimal-gas-prices
-						ethermintante.NewEthValidateBasicDecorator(options.EvmKeeper),
 					)
 
 				default:
