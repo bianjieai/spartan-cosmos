@@ -575,8 +575,8 @@ func filterPeers(nodeID string, peers []string) string {
 		return dstPeers[0]
 	}
 
-	sort.Strings(peers)
-	return strings.Join(peers, ",")
+	sort.Strings(dstPeers)
+	return strings.Join(dstPeers, ",")
 }
 
 func getIP(i int, startingIPAddr string) (ip string, err error) {
