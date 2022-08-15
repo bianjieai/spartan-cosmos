@@ -96,7 +96,7 @@ func (ov EthOpbValidator) CanTransfer(db vm.StateDB, userAddr common.Address, am
 		if err != nil {
 			return false
 		}
-		if ov.hasPlatformUserPerm(ov.ctx, userCosmosAddr) {
+		if !ov.hasPlatformUserPerm(ov.ctx, userCosmosAddr) {
 			return false
 		}
 		if userCosmosAddr.String() != owner {
