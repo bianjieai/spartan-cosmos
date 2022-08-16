@@ -286,9 +286,28 @@ func (ctd CanTransferDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 		validator := NewEthOpbValidator(ctx, ctd.opbKeeper, ctd.tokenKeeper, ctd.evmKeeper, ctd.permKeeper)
 		evm.Context.CanTransfer = validator.CanTransfer
 
+		isToOwner := false
 		if coreMsg.To() != nil {
 
 			if coreMsg.Value().Sign() > 0 && !evm.Context.CanTransfer(stateDB, *coreMsg.To(), coreMsg.Value()) {
+				return ctx, sdkerrors.Wrapf(
+					sdkerrors.ErrInsufficientFunds,
+					"failed to transfer %s to address %s using the EVM block context transfer function",
+					coreMsg.Value(),
+					*coreMsg.To(),
+				)
+			}
+
+			if coreMsg.Value().Sign() > 0 && evm.Context.CanTransfer(stateDB, *coreMsg.To(), coreMsg.Value()) {
+				isToOwner = true
+			}
+
+		}
+
+		if isToOwner {
+			// check that caller has enough balance to cover asset transfer for **topmost** call
+			// NOTE: here the gas consumed is from the context with the infinite gas meter
+			if coreMsg.Value().Sign() > 0 && !evm.Context.CanTransfer(stateDB, coreMsg.From(), coreMsg.Value()) {
 				return ctx, sdkerrors.Wrapf(
 					sdkerrors.ErrInsufficientFunds,
 					"failed to transfer %s from address %s using the EVM block context transfer function",
@@ -296,18 +315,6 @@ func (ctd CanTransferDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 					coreMsg.From(),
 				)
 			}
-
-		}
-
-		// check that caller has enough balance to cover asset transfer for **topmost** call
-		// NOTE: here the gas consumed is from the context with the infinite gas meter
-		if coreMsg.Value().Sign() > 0 && !evm.Context.CanTransfer(stateDB, coreMsg.From(), coreMsg.Value()) {
-			return ctx, sdkerrors.Wrapf(
-				sdkerrors.ErrInsufficientFunds,
-				"failed to transfer %s from address %s using the EVM block context transfer function",
-				coreMsg.Value(),
-				coreMsg.From(),
-			)
 		}
 
 		if evmtypes.IsLondon(ethCfg, ctx.BlockHeight()) {
