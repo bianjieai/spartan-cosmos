@@ -57,11 +57,6 @@ func (sucd SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 
 	//gas caculate
 	gasMeter.ConsumeGasWithMsgs(tx.GetMsgs())
-
-	if simulate {
-		return newCtx, nil
-	}
-
 	return next(newCtx, tx, simulate)
 }
 

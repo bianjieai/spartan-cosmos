@@ -58,7 +58,7 @@ $ <appd> tx broadcast ./mytxn.json
 					return err
 				}
 
-				_, _ = fmt.Fprintf(os.Stderr, "%s\n", simRes.GasInfo.GasUsed)
+				_, _ = fmt.Fprintf(os.Stderr, "%d\n", simRes.GasInfo.GasUsed)
 				return nil
 			}
 
