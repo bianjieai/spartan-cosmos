@@ -54,7 +54,14 @@ func (sucd SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 	if !ok {
 		return next(newCtx, tx, simulate)
 	}
+
+	//gas caculate
 	gasMeter.ConsumeGasWithMsgs(tx.GetMsgs())
+
+	if simulate {
+		return newCtx, nil
+	}
+
 	return next(newCtx, tx, simulate)
 }
 
@@ -70,9 +77,5 @@ func SetGasMeter(simulate bool, ctx sdk.Context, gasLimit uint64, fixedGas bool)
 		return ctx.WithGasMeter(sdk.NewGasMeter(gasLimit))
 	}
 
-	if simulate {
-		gasLimit = DefaultSimulateGas
-	}
-
-	return ctx.WithGasMeter(NewFixedGasMeter(gasLimit))
+	return ctx.WithGasMeter(NewFixedGasMeter(gasLimit, simulate))
 }
