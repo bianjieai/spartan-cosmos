@@ -12,4 +12,5 @@ The node can be configured with the following endpoints, each type of which serv
 
 - [gRPC Gateway](grpc-rest.md)
 - [gRPC Client](grpc-client.md)
+- [EVM JSON RPC](evm-json-rpc.md)
 - [Client SDK](client-sdk.md)

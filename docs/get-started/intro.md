@@ -8,6 +8,10 @@ order: 1
 
 The **Spartan-Cosmos** chain is a Non-Crypto Public Chain based on **Cosmos-SDK**, **IRISnet**, and **IRITA**, which forms **the BSN Spartan Network**, together with other blockchains conforming to the BSN Non-Crypto Public Chain Transformation Instructions.
 
+:::tip
+Refer to **[Features](../features/overview.md)** to discover more about Spartan-Cosmos.  
+:::
+
 ### Node Management
 
 In Spartan Network exist two types of nodes: Accounting Node and Consensus Node. An Accounting Node can join and exit the network freely, while a Consensus Node is only allowed to join if voted on by the Spartan Governance System. 
@@ -26,6 +30,9 @@ Unlike Crypto Public Chains, Energy Credit cannot be traded or transferred betwe
 
 Spartan-Cosmos uses [the OPB module](../features/opb.md) to place restrictions on account transactions and transfers. 
 
-:::tip
-Refer to **[Features](../features/overview.md)** to discover more about Spartan-Cosmos.  
-:::
+### EVM Compatibility
+
+Spartan Cosmos supports Ethereum-based transactions and smart contracts by using Ethermint. 
+
+Refer to [EVM](../features/evm.md) to see how to deploy a smart contract and [EVM Endpoints](../endpoints/evm-json-rpc.md) to see how to use EVM JSON-RPC Endpoints.
+

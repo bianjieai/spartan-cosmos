@@ -6,19 +6,6 @@ order: 1
 
 The `spartan` executable program is the entry point for running an Spartan-Cosmos node. All the validator nodes and full nodes need to install the `spartan` and launching the daemon to join the Spartan-Cosmos network. You can also use `spartan` to start your own test network locally.
 
-## Hardware Requeirment
-
-It's recommended that you run Spartan-Cosmos nodes on Linux Server.
-
-### Minimum Requeirment
-
-- 2 CPU
-- Memory: 6GB
-- Disk: 256GB SSD
-- OS: Ubuntu 16.04 LTS +
-- Bandwidth: 20Mbps
-- Allow all incoming connections on TCP port 26656 and 26657
-
 ## Home Directory
 
 The home directory is the working directory of the spartan node. The home directory contains all the configuration information and all the data that the node runs.
