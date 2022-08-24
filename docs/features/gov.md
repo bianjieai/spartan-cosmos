@@ -31,7 +31,7 @@ In the initial version of the governance module, there are seven types of propos
 - `SoftwareUpgradeProposal`. If accepted, validators are expected to update their software in accordance with the proposal. They must do so by following a 2-steps process described in the Software Upgrade. Software upgrade roadmap may be discussed and agreed on via `TextProposals`, but actual software upgrades must be performed via `SoftwareUpgradeProposals`.
 - `CancelSoftwareUpgradeProposal` is a gov Content type for cancelling a software upgrade.
 - `ParameterChangeProposal` defines a proposal to change one or more parameters. If accepted, the requested parameter change is updated automatically by the proposal handler upon conclusion of the voting period.
-- `CreationValidatorProposal` is the only way for a node to become a Validator into the network. The validator's power is specified in the proposal.
+- `CreateValidatorProposal` is the only way for a node to become a Validator into the network. The validator's power is specified in the proposal.
 - `RemoveValidatorProposal` propose to remove a Validator from the network.
 - `UpdateValidatorProposal` can update a Validator's information, such as its weight power. In Spartan-Cosmos, validators are not allowed to change their power in other ways.
 
