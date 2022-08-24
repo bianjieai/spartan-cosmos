@@ -17,7 +17,7 @@ Once the gRPC server is started, you can send requests to it using a gRPC client
 
 ## gRPC Endpoints
 
-An overview of all available gRPC endpoints shipped with the Spartan-Cosmos is [Protobuf documention](./proto-docs.md).
+An overview of all available gRPC endpoints shipped with the Spartan-Cosmos is [Protobuf documention](../resources/intro.md).
 
 ## Generating, Signing and Broadcasting Transactions
 
