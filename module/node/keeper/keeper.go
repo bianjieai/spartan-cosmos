@@ -20,15 +20,15 @@ func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey, ps paramtypes.Subspace) K
 	return Keeper{Keeper: nodekeeper.NewKeeper(cdc, storeKey, ps)}
 }
 
-func (k *Keeper) ProposalHandler() govtypes.Handler {
+func (k Keeper) ProposalHandler() govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
 		case *node.CreateValidatorProposal:
-			return k.handleValidatorCreateProposal(ctx, c)
+			return k.handleValidatorCreateProposal(ctx, *c)
 		case *node.UpdateValidatorProposal:
-			return k.handleValidatorUpdateProposal(ctx, c)
+			return k.handleValidatorUpdateProposal(ctx, *c)
 		case *node.RemoveValidatorProposal:
-			return k.handleValidatorRemoveProposal(ctx, c)
+			return k.handleValidatorRemoveProposal(ctx, *c)
 
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized param proposal content type: %T", c)
