@@ -6,7 +6,7 @@ order: 3
 
 For testing or developing purposes, you may want to set up a local testnet.
 
-It is recommended to use the `spartan testnet` command to setup directly. But you can also setup a node manually, which requires some additional steps.
+It is recommended to use the `spartan testnet` command to setup directly. Currently the `init` subcommand is not supported.
 
 ## Set up with `spartan testnet` Command
 
@@ -71,54 +71,6 @@ spartan unsafe-reset-all --home ./testnet/node0/spartan
 > INF Removed all blockchain history dir=testnet/node0/spartan/data
 > INF Reset private validator file to genesis state keyFile=testnet/node0/spartan/config/priv_validator_key.json stateFile=testnet/node0/spartan/data/priv_validator_state.json
 ```
-
-## Set up with `spartan init` Command
-
-### init config
-```bash
-spartan init <monikar> --chain-id <chain-id> --home <dir>
-```
-
-Specify node monikar, chain name and home directory.
-```bash
-spartan init spnode --chain-id spchain --home spartan-node
-```
-
-The node directory looks like this:
-```
-├── config
-│   ├── app.toml
-│   ├── config.toml
-│   ├── genesis.json
-│   ├── node_key.json
-│   └── priv_validator_key.json
-└── data
-    └── priv_validator_state.json
-```
-
-### add account
-Currently you don't have an account under your local testnet, so we should add one.
-```bash
-spartan keys add spartan-boy
-```
-
-Defaulty, the account created is saved on your OS backend.
-```
-- name: spartan-boy
-  type: local
-  address: iaa10qd4wh74rhw9jta7rscs0mgnt0xxydfc7ag7zv
-  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"A3PicWH5QCjTEzAPYHySV5aS1Ur23wvQSzTaYQNkY/pM"}'
-  mnemonic: ""
-
-
-**Important** write this mnemonic phrase in a safe place.
-It is the only way to recover your account if you ever forget your password.
-
-output frequent replace thank cover friend health armor engage paddle sweet immense way method fork begin betray firm sea twist girl agent swamp note
-
-```
-
-### TODO
 
 ## Testnet with Docker
 

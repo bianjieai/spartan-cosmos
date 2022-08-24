@@ -17,7 +17,7 @@ Follow the [Installation](installation.md) document to install the Spartan binar
 ## Initialize Node
 ```shell
 # initialize node configurations
-spartan init <moniker> --chain-id=<spartan-mainnet>
+spartan testnet -v 1 --chain-id=<spartan-testnet>
 ```
 
 ## Genesis & Seeds
