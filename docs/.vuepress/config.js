@@ -62,6 +62,7 @@ module.exports = {
                     ["Daemon", "daemon"],
                     ["CLI Client", "cli-client"],
                     ["Endpoints", "endpoints"],
+                    ["Resources", "resources"],
                 ])
             },
         },

@@ -31,7 +31,7 @@ Enabling the `/swagger` endpoint is configurable inside `~/.spartan/config/app.t
 **Spartan-Cosmos API Endpoints**
 
 | API Endpoints                                                            | Description                                                                                      |
-|:------------------------------------------------------------------------ |:------------------------------------------------------------------------------------------------ |
+| :----------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
 | `GET` `/cosmos/auth/v1beta1/accounts/{address}`                          | Return account details based on address                                                          |
 | `GET` `/cosmos/auth/v1beta1/params`                                      | Query all parameters                                                                             |
 | `GET` `/cosmos/bank/v1beta1/balances/{address}`                          | Query the balance of all coins for a single account                                              |
@@ -56,6 +56,13 @@ Enabling the `/swagger` endpoint is configurable inside `~/.spartan/config/app.t
 | `GET` `/cosmos/upgrade/v1beta1/applied_plan/{name}`                      | Query a previously applied upgrade plan by its name                                              |
 | `GET` `/cosmos/upgrade/v1beta1/current_plan`                             | Query the current upgrade plan                                                                   |
 | `GET` `/cosmos/upgrade/v1beta1/upgraded_consensus_state/{last_height}`   | Query the consensus state that will serve as a trusted kernel for the next version of this chain |
+| `GET` `/irismod/mt/denoms/supply`                                        | Supply queries the total supply of a given denom or owner                                        |
+| `GET` `/irismod/mt/denoms`                                               | Denoms queries all the denoms                                                                    |
+| `GET` `/irismod/mt/denoms/{denom_id}`                                    | Denom queries the definition of a given denom ID                                                 |
+| `GET` `/irismod/mt/mts/{denom_id}/{mt_id}/supply`                        | MTSupply queries the total supply of given denom and mt ID                                       |
+| `GET` `/irismod/mt/mts/{denom_id}`                                       | MTs queries all the MTs of a given denom ID                                                      |
+| `GET` `/irismod/mt/mts/{denom_id}/{mt_id}`                               | MT queries the MT of the given denom and mt ID                                                   |
+| `GET` `/irismod/mt/mts/{owner}/balances`                                 | Balances queries the MT balances of a specified owner                                            |
 | `GET` `/irismod/nft/collections/{denom_id}`                              | Query the NFTs by the specified denom                                                            |
 | `GET` `/irismod/nft/collections/{denom_id}/supply`                       | Query the total supply by a given denom                                                          |
 | `GET` `/irismod/nft/denoms`                                              | Query all the denoms                                                                             |
