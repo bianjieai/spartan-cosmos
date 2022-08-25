@@ -20,12 +20,6 @@ If, for various reasons, you cannot use gRPC (for example, you are building a we
 
 For application developers, gRPC-gateway REST routes needs to be wired up to the REST server, this is done by calling the `RegisterGRPCGatewayRoutes` function on the ModuleManager.
 
-### Swagger
-
-A [Swagger](https://swagger.io/) (or OpenAPIv2) specification file is exposed under the `/swagger` route on the API server. Swagger is an open specification describing the API endpoints a server serves, including description, input arguments, return types and much more about each endpoint.
-
-Enabling the `/swagger` endpoint is configurable inside `~/.spartan/config/app.toml` via the `api.swagger` field, which is set to true by default.
-
 ## API Endpoints
 
 **Spartan-Cosmos API Endpoints**
