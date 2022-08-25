@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/tendermint/tendermint/p2p"
