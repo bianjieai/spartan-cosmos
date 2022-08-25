@@ -23,7 +23,7 @@ type SignInfo struct {
 func NodeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "node",
-		Short: "Tool for helping with debugging your application",
+		Short: "Sign and Verify node information",
 		RunE:  client.ValidateCmd,
 	}
 
