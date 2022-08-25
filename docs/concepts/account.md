@@ -16,7 +16,7 @@ The wallet address or contract address of a Non-Crypto Public Chain on the Spart
 
 ### Admin Account
 
-The wallet address or contract address of a Non-Crypto Public Chain on the Spartan Network with Energy Credit management authority, which can only be created by the BSN Foundation.
+The wallet address or contract address of a Non-Crypto Public Chain on the Spartan Network with Gas Credit management authority, which can only be created by the BSN Foundation.
 
 ## Key
 

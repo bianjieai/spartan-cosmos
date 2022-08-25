@@ -20,13 +20,13 @@ Spartan-Cosmos achieves this feature by introducing [the Gov module](../features
 
 ### Resource Management
 
-Non-Crypto Public Chains need to support the billing of computing and storage resources consumed by transaction processing on the chain based on a [Gas](../concepts/basics.md#gas) metering mechanism. Users can pay for Gas through [Energy Credits](../concepts/basics.md#energy-credit).
+Non-Crypto Public Chains need to support the billing of computing and storage resources consumed by transaction processing on the chain based on a [Gas](../concepts/fee.md#gas) metering mechanism. Users can pay for Gas through [Gas Credits](../concepts/fee#gas-credit.md).
 
 Spartan-Cosmos integrates [Cosmos GasMeter](https://docs.cosmos.network/main/basics/gas-fees.html#gas-meter) to manage the consumption of resources during execution. In the Cosmos-SDK based chain, Gas is a special unit used to track resource consumption during execution. Gas is typically consumed whenever read and writes are made to the store, but it can also be consumed if expensive computation needs to be done. 
 
 ### Cryptocurrency Transfer Control Management
 
-Unlike Crypto Public Chains, Energy Credit cannot be traded or transferred between Chain Accounts Non-Crypto Public Chains must disable peer-to-peer Energy Credit transfers between Chain Accounts (both wallet address or contract address) and only support recharging from the corresponding data center’s NTT account, which are used to pay for Gas. The spent Energy Credits will be sent to Admin Accounts and deleted.
+Unlike Crypto Public Chains, Gas Credit cannot be traded or transferred between Chain Accounts Non-Crypto Public Chains must disable peer-to-peer Gas Credit transfers between Chain Accounts (both wallet address or contract address) and only support recharging from the corresponding data center’s NTT account, which are used to pay for Gas. The spent Gas Credits will be sent to Admin Accounts and deleted.
 
 Spartan-Cosmos uses [the OPB module](../features/opb.md) to place restrictions on account transactions and transfers. 
 
