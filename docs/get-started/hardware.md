@@ -16,3 +16,12 @@ It's recommended that you run Spartan-Cosmos nodes on Linux Server with the foll
 - OS: Ubuntu 16.04 LTS +
 - Bandwidth: 20Mbps
 - Allow all incoming connections on TCP port 26656 and 26657
+
+## Recommended Requeirment
+
+- 4 CPU
+- Memory: 12GB
+- Disk: 512GB SSD
+- OS: Ubuntu 18.04 LTS +
+- Bandwidth: 20Mbps
+- Allow all incoming connections on TCP port 26656 and 26657
