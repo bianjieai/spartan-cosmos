@@ -6,7 +6,7 @@ The **Spartan-Cosmos** chain is a Non-Crypto Public Chain based on **Cosmos-SDK*
 
 ## About Documents
 
-:::tip WARNING
+:::warning
 Since the network is not yet fully developed, this document is for primary reference only. With the development refined, various details will be added and revised.
 :::
 
@@ -18,3 +18,4 @@ Since the network is not yet fully developed, this document is for primary refer
 | [Daemon](./daemon/intro.md)               | Run the `spartan` daemon on your machine                         |
 | [CLI Client](./cli-client/intro.md)       | Send transactions and query data with CLI Client                 |
 | [Endpoints](./endpoints/intro.md)         | API enpoints and client SDKs                                     |
+| [Resources](./resources/intro.md)         | Protobuf Document and gRPC endpoints                                     |
