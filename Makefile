@@ -58,7 +58,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=spartan \
 		  -X github.com/bianjieai/spartan-cosmos/address.Bech32ChainPrefix=i \
 		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAcc=a \
 		  -X github.com/bianjieai/spartan-cosmos/address.PrefixAddress=a \
-		  -X github.com/tharsis/ethermint/types.EvmChainID=1223
+		  -X github.com/tharsis/ethermint/types.EvmChainID=9003
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
